@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --color-usafa-blue: #003087;
+  --color-usafa-blue-light: #1a4fa0;
+  --color-usafa-silver: #8A8D8F;
+  --color-positive: #16a34a;
+  --color-negative: #dc2626;
+  --color-variable: #ca8a04;
+  --color-high-disc: #7c3aed;
+  --color-med-disc: #2563eb;
+  --color-low-disc: #6b7280;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100dvh;
+}
+
+/* ── iPhone safe-area helpers ──────────────────────────────────────────────── *
+ * viewport-fit=cover lets us paint behind the notch/Dynamic Island and home  *
+ * indicator. These classes push content clear of those hardware intrusions.   */
+.safe-pt {
+  /* normal top padding (py-3 = 0.75 rem) + notch / status-bar height */
+  padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+}
+.safe-pb {
+  /* keeps background flush to screen bottom; pushes tab icons above bar */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Custom scrollbar for dark mode */
+.dark ::-webkit-scrollbar {
+  width: 8px;
+}
+.dark ::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
