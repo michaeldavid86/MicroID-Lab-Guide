@@ -1,4 +1,4 @@
-// MicroID Field Guide — Culture Media Reference Library
+// MicroID Lab Guide — Culture Media Reference Library
 // Bio 431: Operational Microbiology | USAFA
 
 export const media = [

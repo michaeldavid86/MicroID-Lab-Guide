@@ -33,6 +33,25 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* ── iOS date-input fix ───────────────────────────────────────────────────── *
+ * iOS WebKit (Safari & Chrome) inflates native date inputs beyond their      *
+ * declared height. Force them to match the other text fields.                */
+input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 0;
+  line-height: 1.25;
+}
+input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+  padding: 0;
+  margin: 0;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  margin: 0;
+  padding: 0;
+}
+
 /* Custom scrollbar for dark mode */
 .dark ::-webkit-scrollbar {
   width: 8px;

@@ -1,4 +1,4 @@
-// MicroID Field Guide — Decision Engine
+// MicroID Lab Guide — Decision Engine
 // Bio 431: Operational Microbiology | USAFA
 // Pure functions for organism elimination and test discrimination value
 

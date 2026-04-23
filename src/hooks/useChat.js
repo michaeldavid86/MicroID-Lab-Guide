@@ -1,4 +1,4 @@
-// MicroID Field Guide — AI Chat Hook
+// MicroID Lab Guide — AI Chat Hook
 // Bio 431: Operational Microbiology | USAFA
 
 import { useState, useCallback, useRef } from "react";

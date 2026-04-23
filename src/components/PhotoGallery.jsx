@@ -4,28 +4,27 @@ import { useSessionStore } from "../stores/useSessionStore";
 import { useNavigate } from "react-router";
 
 // ─── Reference gallery data (static, for learning) ────────────────────────────
+// Images sourced from Wikimedia Commons (CC BY-SA) and CDC PHIL (public domain)
 const referenceItems = [
   // Staining
-  { id: "gram-pos-coccus", category: "Staining", testName: "Gram Stain", label: "Gram+ Cocci", description: "Purple cocci in clusters (e.g., Staphylococcus)", colorClass: "bg-purple-100 dark:bg-purple-900/40 border-purple-200 dark:border-purple-800" },
-  { id: "gram-pos-rod", category: "Staining", testName: "Gram Stain", label: "Gram+ Rods", description: "Purple rods (e.g., Bacillus, Clostridium)", colorClass: "bg-purple-100 dark:bg-purple-900/40 border-purple-200 dark:border-purple-800" },
-  { id: "gram-neg-rod", category: "Staining", testName: "Gram Stain", label: "Gram− Rods", description: "Pink/red rods (e.g., E. coli, Salmonella)", colorClass: "bg-pink-100 dark:bg-pink-900/40 border-pink-200 dark:border-pink-800" },
-  { id: "gram-neg-coccus", category: "Staining", testName: "Gram Stain", label: "Gram− Cocci", description: "Pink diplococci (e.g., Neisseria)", colorClass: "bg-pink-100 dark:bg-pink-900/40 border-pink-200 dark:border-pink-800" },
-  { id: "endospore-pos", category: "Staining", testName: "Endospore Stain", label: "Endospore Positive", description: "Green oval endospores inside pink vegetative cells", colorClass: "bg-green-100 dark:bg-green-900/40 border-green-200 dark:border-green-800" },
-  { id: "endospore-neg", category: "Staining", testName: "Endospore Stain", label: "Endospore Negative", description: "All cells pink/red — no green bodies visible", colorClass: "bg-pink-100 dark:bg-pink-900/40 border-pink-200 dark:border-pink-800" },
-  { id: "acid-fast-pos", category: "Staining", testName: "Acid-Fast Stain", label: "Acid-Fast Positive", description: "Bright red bacilli against blue background", colorClass: "bg-red-100 dark:bg-red-900/40 border-red-200 dark:border-red-800" },
-  { id: "acid-fast-neg", category: "Staining", testName: "Acid-Fast Stain", label: "Acid-Fast Negative", description: "All cells blue — non-acid-fast organisms", colorClass: "bg-blue-100 dark:bg-blue-900/40 border-blue-200 dark:border-blue-800" },
+  { id: "gram-pos-coccus", category: "Staining", testName: "Gram Stain", label: "Gram+ Cocci", description: "Purple cocci in clusters (e.g., Staphylococcus)", photo: "/images/reference/gram-pos-coccus.jpg", credit: "Y Tambe, Wikimedia CC BY-SA 3.0" },
+  { id: "gram-pos-rod", category: "Staining", testName: "Gram Stain", label: "Gram+ Rods", description: "Purple rods (e.g., Bacillus, Clostridium)", photo: "/images/reference/gram-pos-rod.jpg", credit: "Y Tambe, Wikimedia CC BY-SA 3.0" },
+  { id: "gram-neg-rod", category: "Staining", testName: "Gram Stain", label: "Gram− Rods", description: "Pink/red rods (e.g., E. coli, Salmonella)", photo: "/images/reference/gram-neg-rod.jpg", credit: "Y Tambe, Wikimedia CC BY-SA 3.0" },
+  { id: "gram-neg-coccus", category: "Staining", testName: "Gram Stain", label: "Gram− Cocci", description: "Pink diplococci (e.g., Neisseria)", photo: "/images/reference/gram-neg-coccus.jpg", credit: "Dr Graham Beards, Wikimedia CC BY-SA 4.0" },
+  { id: "endospore-pos", category: "Staining", testName: "Endospore Stain", label: "Endospore Positive", description: "Green oval endospores inside pink vegetative cells", photo: "/images/reference/endospore-pos.png", credit: "WMrapids, Wikimedia CC0" },
+  { id: "endospore-neg", category: "Staining", testName: "Endospore Stain", label: "Endospore Negative", description: "All cells pink/red — no green bodies visible", photo: "/images/reference/endospore-neg.png", credit: "AI-generated reference image" },
+  { id: "acid-fast-pos", category: "Staining", testName: "Acid-Fast Stain", label: "Acid-Fast Positive", description: "Bright red bacilli against blue background", photo: "/images/reference/acid-fast-pos.jpg", credit: "CDC/Dr. George P. Kubica, public domain" },
+  { id: "acid-fast-neg", category: "Staining", testName: "Acid-Fast Stain", label: "Acid-Fast Negative", description: "All cells blue — non-acid-fast organisms", photo: "/images/reference/acid-fast-neg.jpg", credit: "S. Nxumalo, Wikimedia CC BY-SA 4.0" },
   // Media / biochemical
-  { id: "blood-alpha", category: "Media", testName: "Blood Agar", label: "Alpha Hemolysis", description: "Greenish discoloration — partial RBC lysis", colorClass: "bg-green-100 dark:bg-green-900/40 border-green-200 dark:border-green-800" },
-  { id: "blood-beta", category: "Media", testName: "Blood Agar", label: "Beta Hemolysis", description: "Complete clear zone — total RBC lysis", colorClass: "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700" },
-  { id: "blood-gamma", category: "Media", testName: "Blood Agar", label: "Gamma Hemolysis", description: "No change in medium — no hemolysis", colorClass: "bg-red-100 dark:bg-red-900/40 border-red-200 dark:border-red-800" },
-  { id: "mac-pos", category: "Media", testName: "MacConkey Agar", label: "Lactose Fermenter", description: "Pink/red colonies (E. coli, Klebsiella)", colorClass: "bg-pink-100 dark:bg-pink-900/40 border-pink-200 dark:border-pink-800" },
-  { id: "mac-neg", category: "Media", testName: "MacConkey Agar", label: "Non-Fermenter", description: "Colorless/translucent colonies (Salmonella)", colorClass: "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700" },
-  { id: "kia-aa", category: "Media", testName: "KIA", label: "Acid/Acid", description: "Yellow slant / Yellow butt — both sugars fermented", colorClass: "bg-yellow-100 dark:bg-yellow-900/40 border-yellow-200 dark:border-yellow-800" },
-  { id: "kia-ka", category: "Media", testName: "KIA", label: "Alkaline/Acid", description: "Red slant / Yellow butt — glucose only", colorClass: "bg-orange-100 dark:bg-orange-900/40 border-orange-200 dark:border-orange-800" },
-  { id: "kia-h2s", category: "Media", testName: "KIA", label: "H₂S Positive", description: "Black precipitate in butt (e.g., Salmonella)", colorClass: "bg-gray-800 border-gray-700" },
-  { id: "urease-pos", category: "Enzymatic", testName: "Urea Broth", label: "Urease Positive", description: "Bright pink/magenta — ammonia raises pH", colorClass: "bg-pink-100 dark:bg-pink-900/40 border-pink-200 dark:border-pink-800" },
-  { id: "catalase-pos", category: "Enzymatic", testName: "Catalase", label: "Catalase Positive", description: "Vigorous bubbling with H₂O₂", colorClass: "bg-slate-100 dark:bg-slate-700 border-slate-200 dark:border-slate-600" },
-  { id: "oxidase-pos", category: "Enzymatic", testName: "Oxidase", label: "Oxidase Positive", description: "Dark blue/purple color within 10 seconds", colorClass: "bg-purple-100 dark:bg-purple-900/40 border-purple-200 dark:border-purple-800" },
+  { id: "blood-alpha", category: "Media", testName: "Blood Agar", label: "Alpha Hemolysis", description: "Greenish discoloration — partial RBC lysis", photo: "/images/reference/blood-alpha.jpg", credit: "A.K. Chaurasiya, Wikimedia CC BY-SA 4.0" },
+  { id: "blood-beta", category: "Media", testName: "Blood Agar", label: "Beta Hemolysis", description: "Complete clear zone — total RBC lysis", photo: "/images/reference/blood-beta.jpg", credit: "HansN., Wikimedia CC BY-SA 3.0" },
+  { id: "blood-gamma", category: "Media", testName: "Blood Agar", label: "Hemolysis Comparison", description: "Alpha, beta, and gamma hemolysis side by side", photo: "/images/reference/hemolysis-types.jpg", credit: "Y Tambe, Wikimedia CC BY-SA 3.0" },
+  { id: "mac-pos", category: "Media", testName: "MacConkey Agar", label: "LF vs Non-Fermenter", description: "Pink colonies = lactose+; colorless = lactose−", photo: "/images/reference/mac-combined.jpg", credit: "A.K. Chaurasiya, Wikimedia CC BY-SA 4.0" },
+  { id: "kia-all", category: "Media", testName: "KIA / TSI", label: "Reaction Patterns", description: "A/A with gas, K/A glucose only, H₂S positive, uninoculated", photo: "/images/reference/kia-tubes.jpg", credit: "Witmadrid, Wikimedia public domain" },
+  { id: "kia-labeled", category: "Media", testName: "KIA / TSI", label: "Labeled Reactions", description: "TSI tubes with organism-specific results labeled", photo: "/images/reference/kia-tubes-labeled.jpg", credit: "Y Tambe, Wikimedia CC BY-SA 3.0" },
+  { id: "urease-pos", category: "Enzymatic", testName: "Urea Broth", label: "Urease Positive", description: "Bright pink/magenta — ammonia raises pH", photo: "/images/reference/urease-pos.jpg", credit: "A.K. Chaurasiya, Wikimedia CC BY 4.0" },
+  { id: "catalase-pos", category: "Enzymatic", testName: "Catalase", label: "Catalase Positive", description: "Vigorous bubbling with H₂O₂", photo: "/images/reference/catalase-pos.jpg", credit: "Nase, Wikimedia CC BY-SA 3.0" },
+  { id: "oxidase-pos", category: "Enzymatic", testName: "Oxidase", label: "Oxidase Positive", description: "Dark blue/purple color within 10 seconds", photo: "/images/reference/oxidase-pos.jpg", credit: "A.K. Chaurasiya, Wikimedia CC BY-SA 4.0" },
 ];
 
 // ─── Result color chip ─────────────────────────────────────────────────────────
@@ -152,20 +151,60 @@ function PhotoCard({ photoKey, photo }) {
   );
 }
 
-// ─── Reference image placeholder card ─────────────────────────────────────────
+// ─── Reference image card ─────────────────────────────────────────────────────
 function ReferenceCard({ item }) {
+  const [lightbox, setLightbox] = useState(false);
+
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800">
-      <div className={`aspect-video rounded-t-xl border-b border-slate-200 dark:border-slate-700 ${item.colorClass} flex flex-col items-center justify-center p-2`}>
-        <p className="text-xs font-medium text-center text-slate-600 dark:text-slate-400">{item.label}</p>
-        <p className="text-xs text-center text-slate-400 dark:text-slate-500 mt-1">📷 Lab photo</p>
+    <>
+      <div
+        className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800 cursor-pointer"
+        onClick={() => item.photo && setLightbox(true)}
+      >
+        {item.photo ? (
+          <img
+            src={item.photo}
+            alt={`${item.testName} — ${item.label}`}
+            className="aspect-video w-full object-cover rounded-t-xl border-b border-slate-200 dark:border-slate-700"
+            loading="lazy"
+          />
+        ) : (
+          <div className="aspect-video rounded-t-xl border-b border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-700 flex flex-col items-center justify-center p-2">
+            <p className="text-xs font-medium text-center text-slate-500 dark:text-slate-400">{item.label}</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">AI-generated image needed</p>
+          </div>
+        )}
+        <div className="p-2">
+          <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">{item.testName}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{item.label}</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 leading-tight">{item.description}</p>
+          {item.credit && (
+            <p className="text-xs text-slate-300 dark:text-slate-600 mt-1 truncate" title={item.credit}>{item.credit}</p>
+          )}
+        </div>
       </div>
-      <div className="p-2">
-        <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">{item.testName}</p>
-        <p className="text-xs text-slate-500 dark:text-slate-400">{item.label}</p>
-        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 leading-tight">{item.description}</p>
-      </div>
-    </div>
+
+      {/* Lightbox */}
+      {lightbox && item.photo && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setLightbox(false)}
+        >
+          <div className="relative max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
+            <img src={item.photo} alt={`${item.testName} — ${item.label}`} className="w-full rounded-xl shadow-2xl" />
+            <div className="mt-2 text-center text-white text-sm font-medium">{item.testName} — {item.label}</div>
+            <p className="text-center text-white/70 text-xs mt-1">{item.description}</p>
+            {item.credit && <p className="text-center text-white/50 text-xs mt-1">{item.credit}</p>}
+            <button
+              onClick={() => setLightbox(false)}
+              className="absolute top-2 right-2 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -257,9 +296,6 @@ export default function PhotoGallery() {
 
         {showReference && (
           <div className="space-y-3">
-            <p className="text-xs text-slate-400 dark:text-slate-500">
-              📷 Placeholder images shown — Lt Col Barnhart will supply actual lab photos.
-            </p>
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />

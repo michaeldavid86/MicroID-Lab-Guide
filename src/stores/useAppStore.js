@@ -1,4 +1,4 @@
-// MicroID Field Guide — App-Level State Store
+// MicroID Lab Guide — App-Level State Store
 // Bio 431: Operational Microbiology | USAFA
 
 import { create } from "zustand";

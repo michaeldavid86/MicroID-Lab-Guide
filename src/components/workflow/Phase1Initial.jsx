@@ -55,7 +55,7 @@ function LabPhoto({ photoKey, testName, autoCaption, buttonLabel = "Add photo" }
   if (!photo) {
     return (
       <div>
-        <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFile} />
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
         <button
           type="button"
           onClick={() => fileRef.current?.click()}

@@ -1,4 +1,4 @@
-// MicroID Field Guide — Investigation Session Store
+// MicroID Lab Guide — Investigation Session Store
 // Bio 431: Operational Microbiology | USAFA
 
 import { create } from "zustand";
@@ -75,6 +75,7 @@ const initialState = {
 
   // Phase 4 — Final ID
   proposedOrganismId: null,
+  customOrganismName: null, // For write-in IDs not in the database
   sanityCheckResults: null,
   identificationConfirmed: false,
   identificationConfidence: null, // "high" | "medium" | "low"
@@ -235,6 +236,16 @@ export const useSessionStore = create(
       setProposedOrganism: (organismId) =>
         set({
           proposedOrganismId: organismId,
+          customOrganismName: null,
+          sanityCheckResults: null,
+          identificationConfirmed: false,
+          lastModifiedAt: new Date().toISOString(),
+        }),
+
+      setCustomOrganism: (name) =>
+        set({
+          proposedOrganismId: null,
+          customOrganismName: name || null,
           sanityCheckResults: null,
           identificationConfirmed: false,
           lastModifiedAt: new Date().toISOString(),
@@ -354,6 +365,7 @@ export const useSessionStore = create(
           testRankings: s.testRankings,
           // Phase 4
           proposedOrganismId: s.proposedOrganismId,
+          customOrganismName: s.customOrganismName,
           sanityCheckResults: s.sanityCheckResults,
           identificationConfirmed: s.identificationConfirmed,
           identificationConfidence: s.identificationConfidence,

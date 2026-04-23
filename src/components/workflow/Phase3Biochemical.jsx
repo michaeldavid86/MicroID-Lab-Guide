@@ -127,7 +127,7 @@ function TestPhotoUpload({ testId, testName, recordedResult }) {
   if (!photo) {
     return (
       <div className="flex items-center gap-2">
-        <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileChange} />
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
@@ -177,13 +177,14 @@ function TestPhotoUpload({ testId, testName, recordedResult }) {
 }
 
 // Single test card
-function TestCard({ test, recorded, ranking, onRecord }) {
+function TestCard({ test, recorded, ranking, onRecord, onRemove }) {
   const [expanded, setExpanded] = useState(false);
   const [interpOpen, setInterpOpen] = useState(false);
   // Manual override state (shown after guided interpretation, or for tests without interp)
   const [manualResult, setManualResult] = useState(recorded?.result ?? null);
   const [notes, setNotes] = useState(recorded?.notes ?? "");
   const [showManualOverride, setShowManualOverride] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(false);
 
   const hasInterpretation = !!test.interpretationQuestion;
   const isCompound = test.id === "kia";
@@ -320,6 +321,22 @@ function TestCard({ test, recorded, ranking, onRecord }) {
                   Manual Override
                 </button>
               </div>
+              {/* Remove test result */}
+              {!confirmRemove ? (
+                <button
+                  type="button"
+                  onClick={() => setConfirmRemove(true)}
+                  className="w-full py-1.5 text-xs text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                >
+                  Remove this test
+                </button>
+              ) : (
+                <div className="flex items-center gap-2 p-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg">
+                  <p className="flex-1 text-xs text-red-700 dark:text-red-300">Remove this result? Candidates will be recalculated.</p>
+                  <button type="button" onClick={() => setConfirmRemove(false)} className="px-2 py-1 text-xs border border-slate-300 dark:border-slate-600 rounded-lg text-slate-600 dark:text-slate-400">Cancel</button>
+                  <button type="button" onClick={() => { onRemove(test.id); setConfirmRemove(false); setManualResult(null); setNotes(""); setExpanded(false); }} className="px-2 py-1 text-xs bg-red-600 text-white rounded-lg">Remove</button>
+                </div>
+              )}
             </div>
           )}
 
@@ -439,6 +456,7 @@ export default function Phase3Biochemical({ onNext }) {
   const testRankings = useSessionStore((s) => s.testRankings);
   const flowchartSectionId = useSessionStore((s) => s.flowchartSectionId);
   const recordTestResult = useSessionStore((s) => s.recordTestResult);
+  const removeTestResult = useSessionStore((s) => s.removeTestResult);
   const setCurrentPhase = useSessionStore((s) => s.setCurrentPhase);
 
   const applicable = flowchartSectionId ? (flowchartTestOrder[flowchartSectionId] || []) : [];
@@ -514,6 +532,7 @@ export default function Phase3Biochemical({ onNext }) {
               recorded={testResults[test.id]}
               ranking={rankingMap[test.id]}
               onRecord={(id, result, notes) => recordTestResult(id, result, notes)}
+              onRemove={(id) => removeTestResult(id)}
             />
           ))}
         </div>
@@ -531,7 +550,13 @@ export default function Phase3Biochemical({ onNext }) {
             </div>
           )}
           <button
-            onClick={() => { setCurrentPhase(4); onNext(); }}
+            onClick={() => {
+              useSessionStore.setState((s) => ({
+                phaseCompleted: { ...s.phaseCompleted, 3: true },
+                currentPhase: 4,
+                lastModifiedAt: new Date().toISOString(),
+              }));
+            }}
             className={`w-full flex items-center justify-center gap-2 font-medium py-3 rounded-xl transition-colors ${
               candidateIds.length <= 3
                 ? "bg-usafa-blue hover:bg-usafa-blue-light text-white"

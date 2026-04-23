@@ -37,15 +37,19 @@ export default function Phase4FinalID() {
   const eliminatedEntries = useSessionStore((s) => s.eliminatedEntries);
   const testResults = useSessionStore((s) => s.testResults);
   const proposedOrganismId = useSessionStore((s) => s.proposedOrganismId);
+  const customOrganismName = useSessionStore((s) => s.customOrganismName);
   const sanityCheckResults = useSessionStore((s) => s.sanityCheckResults);
   const identificationConfirmed = useSessionStore((s) => s.identificationConfirmed);
   const setProposedOrganism = useSessionStore((s) => s.setProposedOrganism);
+  const setCustomOrganism = useSessionStore((s) => s.setCustomOrganism);
   const runSanityCheck = useSessionStore((s) => s.runSanityCheck);
   const confirmIdentification = useSessionStore((s) => s.confirmIdentification);
 
   const [confidence, setConfidence] = useState("high");
   const [notes, setNotes] = useState("");
   const [checkedSanity, setCheckedSanity] = useState(false);
+  const [showWriteIn, setShowWriteIn] = useState(!!customOrganismName);
+  const [writeInDraft, setWriteInDraft] = useState(customOrganismName || "");
 
   const allCandidateOrgs = allOrganisms.filter((o) => candidateIds.includes(o.id));
   // Also show eliminated candidates so cadets can reconsider
@@ -57,6 +61,10 @@ export default function Phase4FinalID() {
     ? allOrganisms.find((o) => o.id === proposedOrganismId)
     : null;
 
+  // Display name for the proposed ID (from database or custom write-in)
+  const proposedName = proposedOrg?.name || customOrganismName;
+  const hasProposal = !!(proposedOrg || customOrganismName);
+
   const handleRunSanityCheck = () => {
     runSanityCheck();
     setCheckedSanity(true);
@@ -67,7 +75,7 @@ export default function Phase4FinalID() {
     navigate("/export");
   };
 
-  if (identificationConfirmed && proposedOrg) {
+  if (identificationConfirmed && hasProposal) {
     return (
       <Card className="text-center py-8">
         <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-3" />
@@ -75,9 +83,10 @@ export default function Phase4FinalID() {
           Investigation Complete
         </h2>
         <p className="text-slate-600 dark:text-slate-400 mb-1">Unknown identified as:</p>
-        <p className="text-lg font-semibold italic text-usafa-blue dark:text-blue-400 mb-4">{proposedOrg.name}</p>
+        <p className="text-lg font-semibold italic text-usafa-blue dark:text-blue-400 mb-4">{proposedName}</p>
         <div className="flex gap-2 justify-center flex-wrap">
-          <Badge variant={`bsl${proposedOrg.bslLevel}`}>BSL-{proposedOrg.bslLevel}</Badge>
+          {proposedOrg && <Badge variant={`bsl${proposedOrg.bslLevel}`}>BSL-{proposedOrg.bslLevel}</Badge>}
+          {customOrganismName && <Badge variant="info">Write-in ID</Badge>}
           <Badge variant={confidence === "high" ? "positive" : confidence === "medium" ? "variable" : "critical"}>
             {confidence} confidence
           </Badge>
@@ -131,6 +140,55 @@ export default function Phase4FinalID() {
           </div>
         )}
 
+        {/* Write-in option */}
+        <div className="mb-4">
+          {!showWriteIn ? (
+            <button
+              type="button"
+              onClick={() => setShowWriteIn(true)}
+              className="text-sm text-slate-500 dark:text-slate-400 hover:text-usafa-blue dark:hover:text-blue-400 transition-colors"
+            >
+              Organism not listed? Write in your identification →
+            </button>
+          ) : (
+            <div className="space-y-2 p-3 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800">
+              <p className="text-xs font-medium text-slate-600 dark:text-slate-400">Write-in Identification</p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={writeInDraft}
+                  onChange={(e) => setWriteInDraft(e.target.value)}
+                  placeholder="e.g., Bacillus cereus"
+                  className="flex-1 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm italic focus:ring-2 focus:ring-usafa-blue outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (writeInDraft.trim()) {
+                      setCustomOrganism(writeInDraft.trim());
+                      setCheckedSanity(false);
+                    }
+                  }}
+                  disabled={!writeInDraft.trim()}
+                  className="px-4 py-2 bg-usafa-blue text-white text-sm font-medium rounded-lg disabled:bg-slate-300 dark:disabled:bg-slate-600 transition-colors"
+                >
+                  Select
+                </button>
+              </div>
+              {customOrganismName && (
+                <p className="text-xs text-green-600 dark:text-green-400">Selected: <em>{customOrganismName}</em></p>
+              )}
+              <button
+                type="button"
+                onClick={() => { setShowWriteIn(false); setWriteInDraft(""); if (customOrganismName) setCustomOrganism(null); }}
+                className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+              >
+                Cancel write-in
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Eliminated candidates (for reconsideration) */}
         {eliminatedOrgs.length > 0 && (
           <details className="mt-2">
@@ -164,8 +222,8 @@ export default function Phase4FinalID() {
         )}
       </Card>
 
-      {/* Sanity Check */}
-      {proposedOrg && (
+      {/* Sanity Check — only for organisms in the database */}
+      {proposedOrg && !customOrganismName && (
         <Card>
           <h2 className="font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
             <Shield className="w-5 h-5 text-usafa-blue" />
@@ -219,10 +277,16 @@ export default function Phase4FinalID() {
         </Card>
       )}
 
-      {/* Confirm identification */}
-      {proposedOrg && checkedSanity && sanityCheckResults && (
+      {/* Confirm identification — for DB organisms after sanity check, or immediately for write-ins */}
+      {((proposedOrg && checkedSanity && sanityCheckResults) || customOrganismName) && (
         <Card>
           <h2 className="font-semibold text-slate-900 dark:text-slate-100 mb-3">Confirm Identification</h2>
+          {customOrganismName && (
+            <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 rounded-xl mb-3 text-sm text-amber-800 dark:text-amber-200">
+              <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <span>Write-in identification: <em>{customOrganismName}</em>. Sanity check is not available for write-in organisms.</span>
+            </div>
+          )}
 
           <div className="mb-3">
             <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Identification Confidence</p>
@@ -256,7 +320,7 @@ export default function Phase4FinalID() {
             />
           </div>
 
-          {sanityCheckResults.criticalCount > 0 && (
+          {sanityCheckResults?.criticalCount > 0 && (
             <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-xl mb-3 text-sm text-red-800 dark:text-red-200">
               <XCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <span>Critical conflicts exist (Gram stain mismatch). Strongly reconsider your identification before confirming.</span>
@@ -267,7 +331,7 @@ export default function Phase4FinalID() {
             onClick={handleConfirm}
             className="w-full flex items-center justify-center gap-2 bg-usafa-blue hover:bg-usafa-blue-light text-white font-medium py-3 rounded-xl transition-colors"
           >
-            Confirm: {proposedOrg.name}
+            Confirm: {proposedName}
             <CheckCircle2 className="w-4 h-4" />
           </button>
         </Card>

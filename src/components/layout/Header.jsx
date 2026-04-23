@@ -129,7 +129,7 @@ export default function Header() {
         <div className="flex items-center gap-2">
           <Shield className="w-6 h-6 text-blue-200 flex-shrink-0" />
           <div>
-            <h1 className="font-bold text-sm leading-tight">MicroID Field Guide</h1>
+            <h1 className="font-bold text-sm leading-tight">MicroID Lab Guide</h1>
             <p className="text-blue-200 text-xs">Bio 431 · USAFA</p>
           </div>
         </div>

@@ -1,4 +1,4 @@
-// MicroID Field Guide — AI Chat System Prompt
+// MicroID Lab Guide — AI Chat System Prompt
 // Bio 431: Operational Microbiology | USAFA
 
 export const buildSystemPrompt = (sessionContext = null) => {

@@ -1,4 +1,4 @@
-# MicroID Field Guide
+# MicroID Lab Guide
 
 **A Mobile-First Progressive Web Application for Guided Unknown Bacterial Identification**
 
@@ -9,7 +9,7 @@ Department of Biology
 
 ## Overview
 
-MicroID Field Guide is a free, open-source progressive web application (PWA) designed to guide undergraduate students through the systematic identification of unknown bacterial isolates. Originally developed for USAFA's Bio 431 (Operational Microbiology) unknown identification lab, the app replaces paper-based data sheets with a structured, mobile-friendly digital workflow that enforces proper microbiological reasoning at each decision point.
+MicroID Lab Guide is a free, open-source progressive web application (PWA) designed to guide undergraduate students through the systematic identification of unknown bacterial isolates. Originally developed for USAFA's Bio 431 (Operational Microbiology) unknown identification lab, the app replaces paper-based data sheets with a structured, mobile-friendly digital workflow that enforces proper microbiological reasoning at each decision point.
 
 The application runs entirely in the browser with no backend server, no user accounts, and no data collection. All student data remains on-device in local storage, with optional JSON backup/restore for multi-session lab work.
 
@@ -19,7 +19,7 @@ The application runs entirely in the browser with no backend server, no user acc
 
 In the unknown identification lab, cadets receive an unknown bacterial culture embedded within a fictional operational incident scenario (e.g., contaminated water supply at a deployed location, biofilm on aircraft fuel bladder surfaces). Students must identify the organism using classical microbiological techniques (Gram staining, selective/differential media, biochemical tests) and produce a Commander's Risk Assessment Memo communicating the threat to a non-technical audience.
 
-MicroID Field Guide supports this exercise by:
+MicroID Lab Guide supports this exercise by:
 
 1. **Enforcing a logical identification workflow** -- students cannot skip ahead without recording observations at each phase
 2. **Providing real-time differential narrowing** -- a decision engine eliminates candidate organisms as test results are recorded, making the diagnostic reasoning process visible
@@ -166,7 +166,7 @@ A formatted military memorandum template containing:
 
 ## Deployment
 
-MicroID Field Guide is deployed as a static site. The production build (`npm run build`) produces a `dist/` folder that can be hosted on any static hosting provider:
+MicroID Lab Guide is deployed as a static site. The production build (`npm run build`) produces a `dist/` folder that can be hosted on any static hosting provider:
 
 - **Netlify** (recommended): Drag-and-drop `dist/` folder. Includes `_redirects` file for SPA route handling.
 - **GitHub Pages**: Push `dist/` contents to a `gh-pages` branch.
@@ -203,7 +203,7 @@ npm run build    # Production build to dist/
 
 ## Course Integration
 
-MicroID Field Guide was developed for use in USAFA's Bio 431: Operational Microbiology course, specifically supporting the unknown bacterial identification lab. The application is designed to be:
+MicroID Lab Guide was developed for use in USAFA's Bio 431: Operational Microbiology course, specifically supporting the unknown bacterial identification lab. The application is designed to be:
 
 - **Drop-in compatible** with existing unknown identification learning objectives
 - **Supplementary, not replacement** -- the app guides workflow and captures data but does not replace hands-on laboratory technique, microscopy, or instructor evaluation

@@ -42,7 +42,7 @@ export default function IncidentForm({ onComplete }) {
         onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))}
         placeholder={placeholder}
         required={required}
-        className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-usafa-blue focus:border-usafa-blue outline-none transition"
+        className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-usafa-blue focus:border-usafa-blue outline-none transition h-[38px]"
       />
     </div>
   );

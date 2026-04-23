@@ -1,4 +1,4 @@
-// MicroID Field Guide — Test Definitions
+// MicroID Lab Guide — Test Definitions
 // Bio 431: Operational Microbiology | USAFA
 // All biochemical tests, stains, and physiological tests
 

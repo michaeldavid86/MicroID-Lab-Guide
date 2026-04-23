@@ -1,4 +1,4 @@
-// MicroID Field Guide — Flowchart Routing Logic
+// MicroID Lab Guide — Flowchart Routing Logic
 // Bio 431: Operational Microbiology | USAFA
 
 // Flowchart sections map gram reaction + shape to identification path
@@ -43,7 +43,7 @@ export const flowchartSections = [
         id: "nonAF",
         description: "Observe cell morphology",
         branches: [
-          { result: "regular", label: "Regular rods → Kurthia / Listeria / Lactobacillus" },
+          { result: "regular", label: "Regular rods → Kurthia / Listeria / Lactobacillus", genera: ["Kurthia zopfii", "Listeria monocytogenes", "Listeria innocua", "Lactobacillus acidophilus"] },
           { result: "pleomorphic", label: "Pleomorphic / palisade / club-shaped → Corynebacterium", genera: ["Corynebacterium"] },
         ],
       },
@@ -147,7 +147,7 @@ export const flowchartSections = [
         test: "motility",
         branches: [
           { result: "positive", label: "Motile → Citrate test next", next: "motileGNR" },
-          { result: "negative", label: "Nonmotile → Klebsiella / Shigella", genera: ["Klebsiella pneumoniae", "Shigella dysenteriae"] },
+          { result: "negative", label: "Nonmotile → Klebsiella / Shigella", genera: ["Klebsiella pneumoniae", "Klebsiella aerogenes", "Shigella dysenteriae"] },
         ],
       },
       {
@@ -155,7 +155,7 @@ export const flowchartSections = [
         id: "motileGNR",
         test: "citrate",
         branches: [
-          { result: "positive", label: "Citrate+ → Citrobacter / Enterobacter / Salmonella / Serratia", genera: ["Citrobacter freundii", "Enterobacter aerogenes", "Salmonella enterica", "Serratia marcescens"] },
+          { result: "positive", label: "Citrate+ → Citrobacter / Enterobacter / Salmonella / Serratia", genera: ["Citrobacter freundii", "Enterobacter aerogenes", "Enterobacter cloacae", "Salmonella enterica", "Serratia marcescens"] },
           { result: "negative", label: "Citrate− → E. coli / Proteus / Morganella", genera: ["Escherichia coli", "Proteus vulgaris", "Proteus mirabilis", "Morganella morganii"] },
         ],
       },
