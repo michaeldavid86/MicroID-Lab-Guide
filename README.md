@@ -9,7 +9,7 @@ Department of Biology
 
 ## Overview
 
-MicroID Lab Guide is a free, open-source progressive web application (PWA) designed to guide undergraduate students through the systematic identification of unknown bacterial isolates. Originally developed for USAFA's Bio 431 (Operational Microbiology) unknown identification lab, the app replaces paper-based data sheets with a structured, mobile-friendly digital workflow that enforces proper microbiological reasoning at each decision point.
+MicroID Lab Guide is a free, open-source progressive web application (PWA) designed to guide undergraduate students through the systematic identification of unknown bacterial isolates. Originally developed for USAFA's Bio 431 (Microbiology) unknown identification lab, the app replaces paper-based data sheets with a structured, mobile-friendly digital workflow that enforces proper microbiological reasoning at each decision point.
 
 The application runs entirely in the browser with no backend server, no user accounts, and no data collection. All student data remains on-device in local storage, with optional JSON backup/restore for multi-session lab work.
 
