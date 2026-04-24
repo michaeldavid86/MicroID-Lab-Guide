@@ -215,12 +215,3 @@ MicroID Lab Guide was developed for use in USAFA's Bio 431: Operational Microbio
 ## License
 
 This project is open source and available for educational use.
-
----
-
-## Contact
-
-Lt Col Michael Barnhart
-Department of Biology
-United States Air Force Academy
-USAFA, CO 80840
