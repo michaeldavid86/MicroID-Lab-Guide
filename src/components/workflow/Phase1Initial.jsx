@@ -78,6 +78,7 @@ function LabPhoto({ photoKey, testName, autoCaption, buttonLabel = "Add photo" }
           onClick={() => removeTestPhoto(photoKey)}
           className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/50 hover:bg-red-600 text-white transition-colors"
           title="Remove photo"
+          aria-label="Remove photo"
         >
           <Trash2 className="w-3.5 h-3.5" />
         </button>

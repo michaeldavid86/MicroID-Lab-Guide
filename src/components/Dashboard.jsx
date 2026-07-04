@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   FlaskConical, FileText, ClipboardList, RefreshCw,
   CheckCircle2, Clock, AlertTriangle, Shield,
@@ -10,6 +10,7 @@ import { useAppStore } from "../stores/useAppStore";
 import { organisms } from "../data/organisms";
 import Card from "./shared/Card";
 import Badge from "./shared/Badge";
+import ConfirmModal from "./shared/ConfirmModal";
 import IncidentForm from "./incident/IncidentForm";
 
 function relativeTime(isoString) {
@@ -43,13 +44,14 @@ export default function Dashboard() {
   const restoreRef = useRef(null);
   const [restoreError, setRestoreError] = useState(null);
   const [restoreSuccess, setRestoreSuccess] = useState(false);
-  const [tick, setTick] = useState(0);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [, setTick] = useState(0);
 
   // Refresh the relative timestamp every 30s
-  useState(() => {
+  useEffect(() => {
     const id = setInterval(() => setTick((t) => t + 1), 30_000);
     return () => clearInterval(id);
-  });
+  }, []);
 
   const handleRestoreFile = (e) => {
     const file = e.target.files?.[0];
@@ -84,9 +86,8 @@ export default function Dashboard() {
   };
 
   const handleReset = () => {
-    if (confirm("Reset this investigation? All data will be cleared.")) {
-      resetSession();
-    }
+    resetSession();
+    setShowResetConfirm(false);
   };
 
   if (!hasIncident) {
@@ -130,9 +131,10 @@ export default function Dashboard() {
             </div>
           </div>
           <button
-            onClick={handleReset}
+            onClick={() => setShowResetConfirm(true)}
             className="p-2 text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 rounded-lg transition-colors flex-shrink-0"
             title="Reset investigation"
+            aria-label="Reset investigation and clear all data"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
@@ -287,6 +289,16 @@ export default function Dashboard() {
           <IncidentForm />
         </div>
       </details>
+
+      <ConfirmModal
+        isOpen={showResetConfirm}
+        title="Reset this investigation?"
+        message="All data for this investigation — observations, test results, photos, and notes — will be permanently cleared. This cannot be undone."
+        confirmLabel="Clear Everything"
+        cancelLabel="Cancel"
+        onConfirm={handleReset}
+        onCancel={() => setShowResetConfirm(false)}
+      />
     </div>
   );
 }

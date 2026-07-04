@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Tailwind v4 defaults the dark: variant to prefers-color-scheme. Opt into
+   class-based dark mode so toggling the `.dark` class on <html> drives it. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-usafa-blue: #003087;
   --color-usafa-blue-light: #1a4fa0;

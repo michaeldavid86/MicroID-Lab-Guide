@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router";
+import { X } from "lucide-react";
 import { useAppStore } from "./stores/useAppStore";
+import { useSessionStore } from "./stores/useSessionStore";
 import Header from "./components/layout/Header";
 import TabBar from "./components/layout/TabBar";
 import ErrorBoundary from "./components/shared/ErrorBoundary";
@@ -13,15 +15,30 @@ import ExportView from "./components/ExportView";
 
 export default function App() {
   const initDarkMode = useAppStore((s) => s.initDarkMode);
+  const hydratePhotos = useSessionStore((s) => s.hydratePhotos);
+  const photoError = useSessionStore((s) => s.photoError);
 
-  // Apply persisted dark mode on mount
+  // Apply persisted dark mode + load photos from IndexedDB on mount
   useEffect(() => {
     initDarkMode();
+    hydratePhotos();
   }, []);
 
   return (
     <div className="flex flex-col h-dvh bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
       <Header />
+      {photoError && (
+        <div className="flex items-start gap-2 px-4 py-2 bg-amber-100 dark:bg-amber-950 border-b border-amber-300 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200">
+          <span className="flex-1">{photoError}</span>
+          <button
+            onClick={() => useSessionStore.setState({ photoError: null })}
+            className="p-0.5 hover:bg-amber-200 dark:hover:bg-amber-900 rounded"
+            aria-label="Dismiss storage warning"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
       <main className="flex-1 overflow-hidden">
         <ErrorBoundary>
           <Routes>

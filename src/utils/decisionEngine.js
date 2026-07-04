@@ -52,17 +52,29 @@ export function filterByGramStain(gramReaction, shape) {
 // ─────────────────────────────────────────────────────────────────
 
 /**
+ * Compare a boolean organism property (e.g. endosporeForming) to an observed
+ * positive/negative result. Returns true if compatible (do NOT eliminate).
+ */
+function stainMatches(knownBool, observed) {
+  if (knownBool === undefined || knownBool === null) return true; // no data → keep
+  const expected = knownBool ? "positive" : "negative";
+  return String(observed).toLowerCase().trim() === expected;
+}
+
+/**
  * Main elimination function.
- * Given gram stain data + all recorded test results,
- * returns { candidateIds, eliminatedEntries }
+ * Given gram stain data, all recorded biochemical results, and the Phase 1
+ * stain observations (endospore, acid-fast, capsule), returns
+ * { candidateIds, eliminatedEntries }.
  *
+ * observations: { endospore, acidFast, capsule } — each "positive" | "negative" | null
  * eliminatedEntries: [{ organismId, name, eliminatedBy, expected, observed }]
  */
-export function runElimination(gramReaction, gramShape, testResults) {
+export function runElimination(gramReaction, gramShape, testResults, observations = {}) {
   const passedIds = new Set(filterByGramStain(gramReaction, gramShape));
   const eliminatedEntries = [];
 
-  // For each recorded test, try to eliminate organisms
+  // For each recorded biochemical test, try to eliminate organisms
   for (const [testId, entry] of Object.entries(testResults || {})) {
     const observed = entry.result;
     if (observed === null || observed === undefined) continue;
@@ -78,6 +90,48 @@ export function runElimination(gramReaction, gramShape, testResults) {
           eliminatedBy: testId,
           expected: known ?? "no data",
           observed,
+        });
+        passedIds.delete(org.id);
+      }
+    }
+  }
+
+  // Phase 1 stain observations — endospore and acid-fast map to top-level
+  // organism booleans; capsule maps to a characteristics field.
+  const boolStains = [
+    { observed: observations.endospore, prop: "endosporeForming", label: "endospore stain" },
+    { observed: observations.acidFast, prop: "acidFast", label: "acid-fast stain" },
+  ];
+  for (const { observed, prop, label } of boolStains) {
+    if (observed !== "positive" && observed !== "negative") continue;
+    for (const org of organisms) {
+      if (!passedIds.has(org.id)) continue;
+      const known = org[prop];
+      if (!stainMatches(known, observed)) {
+        eliminatedEntries.push({
+          organismId: org.id,
+          name: org.name,
+          eliminatedBy: label,
+          expected: known ? "positive" : "negative",
+          observed,
+        });
+        passedIds.delete(org.id);
+      }
+    }
+  }
+
+  // Capsule stain — only eliminates organisms with an explicit capsuleStain value
+  if (observations.capsule === "positive" || observations.capsule === "negative") {
+    for (const org of organisms) {
+      if (!passedIds.has(org.id)) continue;
+      const known = org.characteristics?.capsuleStain;
+      if (!resultMatches(known, observations.capsule)) {
+        eliminatedEntries.push({
+          organismId: org.id,
+          name: org.name,
+          eliminatedBy: "capsule stain",
+          expected: known ?? "no data",
+          observed: observations.capsule,
         });
         passedIds.delete(org.id);
       }
@@ -188,7 +242,7 @@ export function rankTests(remainingIds, testedIds, flowchartSectionId) {
  * conflicts: [{ test, testName, expected, observed, severity }]
  * severity: "critical" | "warning" | "info"
  */
-export function runSanityCheck(proposedOrganismId, gramReaction, gramShape, testResults) {
+export function runSanityCheck(proposedOrganismId, gramReaction, gramShape, testResults, observations = {}) {
   const org = organisms.find((o) => o.id === proposedOrganismId);
   if (!org) return { passed: false, score: 0, conflicts: [{ test: "organism", testName: "Organism Lookup", expected: "valid ID", observed: "not found", severity: "critical" }] };
 
@@ -214,6 +268,26 @@ export function runSanityCheck(proposedOrganismId, gramReaction, gramShape, test
       observed: gramShape,
       severity: "critical",
     });
+  }
+
+  // Check Phase 1 stain observations against the proposed organism
+  const stainChecks = [
+    { observed: observations.endospore, prop: "endosporeForming", testName: "Endospore Stain" },
+    { observed: observations.acidFast, prop: "acidFast", testName: "Acid-Fast Stain" },
+  ];
+  for (const { observed, prop, testName } of stainChecks) {
+    if (observed !== "positive" && observed !== "negative") continue;
+    const known = org[prop];
+    if (known === undefined || known === null) continue;
+    if ((known ? "positive" : "negative") !== observed) {
+      conflicts.push({
+        test: prop,
+        testName,
+        expected: known ? "positive" : "negative",
+        observed,
+        severity: "warning",
+      });
+    }
   }
 
   // Check each biochemical test result

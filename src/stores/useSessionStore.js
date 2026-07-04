@@ -6,8 +6,24 @@ import { persist } from "zustand/middleware";
 import { runElimination, rankTests, runSanityCheck } from "../utils/decisionEngine";
 import { getFlowchartId } from "../data/flowcharts";
 import { organisms } from "../data/organisms";
+import { putPhoto, deletePhoto, clearPhotos, getAllPhotos } from "../utils/photoDB";
 
 const generateId = () => Math.random().toString(36).slice(2, 10).toUpperCase();
+
+// Recompute the decision-engine derived state from the current observations.
+// Centralizes the elimination + ranking so every setter stays consistent.
+function recomputeDerived(gramStain, testResults, observations, flowchartSectionId) {
+  const { candidateIds, eliminatedEntries } = runElimination(
+    gramStain.reaction,
+    gramStain.shape,
+    testResults,
+    observations
+  );
+  const testRankings = flowchartSectionId
+    ? rankTests(candidateIds, Object.keys(testResults), flowchartSectionId)
+    : [];
+  return { candidateIds, eliminatedEntries, testRankings };
+}
 
 const initialState = {
   sessionId: generateId(),
@@ -66,7 +82,9 @@ const initialState = {
 
   // Lab photos — { [photoKey]: { dataUrl, caption, testName, recordedResult, uploadedAt } }
   // photoKey = testId, or "gramStain", "endosporeStain", etc.
+  // Stored in IndexedDB (not localStorage) — see hydratePhotos / photoDB.js.
   testPhotos: {},
+  photoError: null, // set when a photo fails to persist to device storage
 
   // Decision engine state (derived, cached)
   candidateIds: organisms.map((o) => o.id), // All organisms initially
@@ -117,34 +135,38 @@ export const useSessionStore = create(
         set((state) => {
           const newGram = { ...state.gramStain, ...data };
           const sectionId = getFlowchartId(newGram.reaction, newGram.shape);
-
-          // Re-run elimination with new gram data
-          const { candidateIds, eliminatedEntries } = runElimination(
-            newGram.reaction,
-            newGram.shape,
-            state.testResults
-          );
-
-          const rankings = sectionId
-            ? rankTests(candidateIds, Object.keys(state.testResults), sectionId)
-            : [];
-
+          const observations = {
+            endospore: state.endosporeResult,
+            acidFast: state.acidFastResult,
+            capsule: state.capsuleResult,
+          };
+          const derived = recomputeDerived(newGram, state.testResults, observations, sectionId);
           return {
             gramStain: newGram,
             flowchartSectionId: sectionId,
-            candidateIds,
-            eliminatedEntries,
-            testRankings: rankings,
+            ...derived,
             lastModifiedAt: new Date().toISOString(),
           };
         }),
 
       setEndosporeResult: (result) =>
-        set({ endosporeResult: result, lastModifiedAt: new Date().toISOString() }),
+        set((state) => {
+          const observations = { endospore: result, acidFast: state.acidFastResult, capsule: state.capsuleResult };
+          const derived = recomputeDerived(state.gramStain, state.testResults, observations, state.flowchartSectionId);
+          return { endosporeResult: result, ...derived, lastModifiedAt: new Date().toISOString() };
+        }),
       setAcidFastResult: (result) =>
-        set({ acidFastResult: result, lastModifiedAt: new Date().toISOString() }),
+        set((state) => {
+          const observations = { endospore: state.endosporeResult, acidFast: result, capsule: state.capsuleResult };
+          const derived = recomputeDerived(state.gramStain, state.testResults, observations, state.flowchartSectionId);
+          return { acidFastResult: result, ...derived, lastModifiedAt: new Date().toISOString() };
+        }),
       setCapsuleResult: (result) =>
-        set({ capsuleResult: result, lastModifiedAt: new Date().toISOString() }),
+        set((state) => {
+          const observations = { endospore: state.endosporeResult, acidFast: state.acidFastResult, capsule: result };
+          const derived = recomputeDerived(state.gramStain, state.testResults, observations, state.flowchartSectionId);
+          return { capsuleResult: result, ...derived, lastModifiedAt: new Date().toISOString() };
+        }),
 
       // Mark Phase 1 complete and advance
       completePhase1: () =>
@@ -174,24 +196,15 @@ export const useSessionStore = create(
               recordedAt: new Date().toISOString(),
             },
           };
-
-          // Re-run elimination engine
-          const { candidateIds, eliminatedEntries } = runElimination(
-            state.gramStain.reaction,
-            state.gramStain.shape,
-            newResults
-          );
-
-          // Re-rank tests
-          const rankings = state.flowchartSectionId
-            ? rankTests(candidateIds, Object.keys(newResults), state.flowchartSectionId)
-            : [];
-
+          const observations = {
+            endospore: state.endosporeResult,
+            acidFast: state.acidFastResult,
+            capsule: state.capsuleResult,
+          };
+          const derived = recomputeDerived(state.gramStain, newResults, observations, state.flowchartSectionId);
           return {
             testResults: newResults,
-            candidateIds,
-            eliminatedEntries,
-            testRankings: rankings,
+            ...derived,
             lastModifiedAt: new Date().toISOString(),
           };
         });
@@ -213,20 +226,15 @@ export const useSessionStore = create(
           const newResults = { ...state.testResults };
           delete newResults[testId];
 
-          const { candidateIds, eliminatedEntries } = runElimination(
-            state.gramStain.reaction,
-            state.gramStain.shape,
-            newResults
-          );
-          const rankings = state.flowchartSectionId
-            ? rankTests(candidateIds, Object.keys(newResults), state.flowchartSectionId)
-            : [];
-
+          const observations = {
+            endospore: state.endosporeResult,
+            acidFast: state.acidFastResult,
+            capsule: state.capsuleResult,
+          };
+          const derived = recomputeDerived(state.gramStain, newResults, observations, state.flowchartSectionId);
           return {
             testResults: newResults,
-            candidateIds,
-            eliminatedEntries,
-            testRankings: rankings,
+            ...derived,
             lastModifiedAt: new Date().toISOString(),
           };
         });
@@ -258,7 +266,12 @@ export const useSessionStore = create(
           state.proposedOrganismId,
           state.gramStain.reaction,
           state.gramStain.shape,
-          state.testResults
+          state.testResults,
+          {
+            endospore: state.endosporeResult,
+            acidFast: state.acidFastResult,
+            capsule: state.capsuleResult,
+          }
         );
         set({ sanityCheckResults: results, lastModifiedAt: new Date().toISOString() });
       },
@@ -274,31 +287,59 @@ export const useSessionStore = create(
           lastModifiedAt: new Date().toISOString(),
         }),
 
-      // ─── Lab Photos ──────────────────────────────────────────
+      // ─── Lab Photos (persisted in IndexedDB) ─────────────────
       // photoKey = testId or a stain key like "gramStain"
-      uploadTestPhoto: (photoKey, dataUrl, caption, testName, recordedResult) =>
+      uploadTestPhoto: (photoKey, dataUrl, caption, testName, recordedResult) => {
+        const record = { dataUrl, caption, testName, recordedResult, uploadedAt: new Date().toISOString() };
+        // Update in-memory state immediately so the photo renders right away…
         set((state) => ({
-          testPhotos: {
-            ...state.testPhotos,
-            [photoKey]: { dataUrl, caption, testName, recordedResult, uploadedAt: new Date().toISOString() },
-          },
+          testPhotos: { ...state.testPhotos, [photoKey]: record },
+          photoError: null,
           lastModifiedAt: new Date().toISOString(),
-        })),
+        }));
+        // …then persist to IndexedDB. Surface a warning if the device rejects it.
+        putPhoto(photoKey, record).catch((err) => {
+          console.error("Photo save failed:", err);
+          set({ photoError: "A photo may not have been saved to this device. Download a backup file to be safe." });
+        });
+      },
 
       updatePhotoCaption: (photoKey, caption) =>
-        set((state) => ({
-          testPhotos: {
-            ...state.testPhotos,
-            [photoKey]: { ...state.testPhotos[photoKey], caption },
-          },
-          lastModifiedAt: new Date().toISOString(),
-        })),
+        set((state) => {
+          const existing = state.testPhotos[photoKey];
+          if (!existing) return {};
+          const updated = { ...existing, caption };
+          putPhoto(photoKey, updated).catch((err) => console.error("Caption save failed:", err));
+          return {
+            testPhotos: { ...state.testPhotos, [photoKey]: updated },
+            lastModifiedAt: new Date().toISOString(),
+          };
+        }),
 
-      removeTestPhoto: (photoKey) =>
+      removeTestPhoto: (photoKey) => {
         set((state) => {
           const { [photoKey]: _, ...rest } = state.testPhotos;
           return { testPhotos: rest, lastModifiedAt: new Date().toISOString() };
-        }),
+        });
+        deletePhoto(photoKey).catch((err) => console.error("Photo delete failed:", err));
+      },
+
+      // Load photos from IndexedDB into state, migrating any legacy photos that
+      // were previously kept in the localStorage session blob.
+      hydratePhotos: async () => {
+        try {
+          const idbPhotos = await getAllPhotos();
+          const statePhotos = get().testPhotos || {};
+          const migrations = [];
+          for (const [key, rec] of Object.entries(statePhotos)) {
+            if (!idbPhotos[key]) migrations.push(putPhoto(key, rec).catch(() => {}));
+          }
+          if (migrations.length) await Promise.allSettled(migrations);
+          set({ testPhotos: { ...statePhotos, ...idbPhotos } });
+        } catch (err) {
+          console.error("Photo hydrate failed:", err);
+        }
+      },
 
       // ─── Memo ─────────────────────────────────────────────────
       setMemo: (data) =>
@@ -318,16 +359,25 @@ export const useSessionStore = create(
         }),
 
       // ─── Session management ───────────────────────────────────
-      resetSession: () =>
+      resetSession: () => {
+        clearPhotos().catch((err) => console.error("Photo clear failed:", err));
         set({
           ...initialState,
           sessionId: generateId(),
           createdAt: new Date().toISOString(),
           lastModifiedAt: new Date().toISOString(),
           candidateIds: organisms.map((o) => o.id),
-        }),
+        });
+      },
 
-      loadSession: (snapshot) => set({ ...snapshot }),
+      loadSession: (snapshot) => {
+        set({ ...snapshot, photoError: null });
+        // Mirror restored photos into IndexedDB (replacing any existing ones)
+        const photos = snapshot.testPhotos || {};
+        clearPhotos()
+          .then(() => Promise.allSettled(Object.entries(photos).map(([k, r]) => putPhoto(k, r))))
+          .catch((err) => console.error("Photo restore failed:", err));
+      },
 
       // Returns a complete snapshot of all session data for backup/restore
       getSnapshot: () => {
@@ -392,6 +442,12 @@ export const useSessionStore = create(
     }),
     {
       name: "microid-session",
+      // Photos live in IndexedDB (see photoDB.js), and photoError is transient —
+      // keep both out of the localStorage blob so it never approaches quota.
+      partialize: (state) => {
+        const { testPhotos, photoError, ...rest } = state;
+        return rest;
+      },
     }
   )
 );

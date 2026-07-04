@@ -93,11 +93,11 @@ A searchable, categorized reference library provides protocol summaries for 67 s
 ### Key Technical Characteristics
 
 - **Progressive Web App (PWA)**: Installable to device home screen via Safari "Add to Home Screen" on iOS or Chrome install prompt on Android. Runs in standalone mode without browser chrome.
-- **Offline-capable**: All application logic, organism data, and test references are bundled at build time. No network requests are made during use.
+- **Offline-capable**: A service worker (Workbox, via vite-plugin-pwa) precaches the app shell, organism data, test references, and reference images at install time, so the app cold-starts and runs fully offline after the first visit. No network requests are made during use.
 - **Mobile-first responsive design**: Designed for iPhone and Android phone screens (375px viewport). Fully functional on tablet and desktop.
 - **Client-side only**: Zero backend dependencies. No server, no database, no API calls. All data stays on the student's device.
-- **localStorage persistence**: Session state (all results, photos, notes) is persisted to browser localStorage via Zustand's persist middleware and survives app restarts.
-- **Photo compression**: Camera uploads are compressed client-side via HTML5 Canvas (max 1200px width, JPEG at 75% quality) to keep each image under ~200KB, well within localStorage limits for a typical lab session.
+- **On-device persistence**: Session state (results, observations, notes) is persisted to localStorage via Zustand's persist middleware; lab photos are stored separately in IndexedDB (which has a far larger quota than localStorage) and survive app restarts.
+- **Photo compression**: Camera uploads are compressed client-side via HTML5 Canvas (max 1200px width, JPEG at 75% quality) to keep each image around ~200KB.
 - **Backup/restore**: Students can download their full session as a JSON file and restore it on a different device or after browser data is cleared.
 - **Dark mode**: Supports system-level dark mode preference with manual toggle.
 - **Production bundle**: ~460KB JavaScript + ~47KB CSS (gzipped: ~130KB + ~9KB). No external CDN dependencies at runtime.

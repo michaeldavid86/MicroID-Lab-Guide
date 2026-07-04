@@ -4,11 +4,18 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+// First-run default: follow the device's system theme. Once the user toggles,
+// their explicit choice is persisted and used instead.
+const systemPrefersDark = () =>
+  typeof window !== "undefined" &&
+  typeof window.matchMedia === "function" &&
+  window.matchMedia("(prefers-color-scheme: dark)").matches;
+
 export const useAppStore = create(
   persist(
     (set) => ({
       // UI state
-      darkMode: false,
+      darkMode: systemPrefersDark(),
       activeTab: "dashboard",
 
       // Saved sessions (completed investigations)
