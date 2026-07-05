@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { Shield, Moon, Sun, FlaskConical, RotateCcw, AlertTriangle, X } from "lucide-react";
+import { Microscope, Moon, Sun, FlaskConical, RotateCcw, AlertTriangle, X } from "lucide-react";
 import { useAppStore } from "../../stores/useAppStore";
 import { useSessionStore } from "../../stores/useSessionStore";
 
@@ -127,7 +127,7 @@ export default function Header() {
       <header className="bg-usafa-blue dark:bg-slate-900 text-white px-4 pb-3 safe-pt flex items-center justify-between shadow-lg border-b border-blue-900 dark:border-slate-700">
         {/* Left — branding */}
         <div className="flex items-center gap-2">
-          <Shield className="w-6 h-6 text-blue-200 flex-shrink-0" />
+          <Microscope className="w-6 h-6 text-blue-200 flex-shrink-0" />
           <div>
             <h1 className="font-bold text-sm leading-tight">MicroID Lab Guide</h1>
             <p className="text-blue-200 text-xs">Bio 431 · USAFA</p>
