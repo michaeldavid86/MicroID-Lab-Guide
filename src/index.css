@@ -37,6 +37,14 @@ body {
   overflow: hidden;
 }
 
+/* App shell height, driven by JS from window.screen.height (see index.html).
+   Falls back to 100dvh. The shell is fixed-positioned and anchored at the top
+   with this exact height, so it fills the true screen from first paint without
+   depending on the iOS-buggy dynamic viewport / bottom-anchored layout. */
+.h-app {
+  height: var(--app-height, 100dvh);
+}
+
 /* ── iPhone safe-area helpers ──────────────────────────────────────────────── *
  * viewport-fit=cover lets us paint behind the notch/Dynamic Island and home  *
  * indicator. These classes push content clear of those hardware intrusions.   */
