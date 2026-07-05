@@ -20,6 +20,13 @@ html {
   scroll-behavior: smooth;
 }
 
+/* JS-driven viewport height (set in index.html). Falls back to 100dvh.
+   Avoids the iOS standalone-PWA bug where 100dvh is initially too short and
+   only corrects after a scroll, leaving the bottom nav floating high. */
+.h-app {
+  height: var(--app-height, 100dvh);
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   min-height: 100dvh;

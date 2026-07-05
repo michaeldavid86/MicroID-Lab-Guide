@@ -20,6 +20,27 @@
         if (dark) document.documentElement.classList.add("dark");
       } catch (e) {}
     </script>
+    <!-- Pin the app shell to the REAL viewport height. On iOS standalone PWAs,
+         100dvh/100vh are computed too short on first launch and only correct
+         after a scroll (making the bottom nav sit high until you swipe).
+         window.innerHeight is reliable, so drive the height from it and
+         re-apply on the resize/orientation events iOS fires after launch. -->
+    <script>
+      (function () {
+        function setAppHeight() {
+          document.documentElement.style.setProperty("--app-height", window.innerHeight + "px");
+        }
+        setAppHeight();
+        window.addEventListener("resize", setAppHeight);
+        window.addEventListener("orientationchange", setAppHeight);
+        window.addEventListener("pageshow", setAppHeight);
+        window.addEventListener("load", function () {
+          setAppHeight();
+          requestAnimationFrame(setAppHeight);
+          setTimeout(setAppHeight, 300);
+        });
+      })();
+    </script>
   </head>
   <body class="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
     <div id="root"></div>
