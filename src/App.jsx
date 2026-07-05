@@ -16,12 +16,15 @@ import ExportView from "./components/ExportView";
 export default function App() {
   const initDarkMode = useAppStore((s) => s.initDarkMode);
   const hydratePhotos = useSessionStore((s) => s.hydratePhotos);
+  const recompute = useSessionStore((s) => s.recompute);
   const photoError = useSessionStore((s) => s.photoError);
 
-  // Apply persisted dark mode + load photos from IndexedDB on mount
+  // On mount: reconcile dark mode, load photos from IndexedDB, and recompute
+  // derived engine state so any stale persisted candidate list is corrected.
   useEffect(() => {
     initDarkMode();
     hydratePhotos();
+    recompute();
   }, []);
 
   return (

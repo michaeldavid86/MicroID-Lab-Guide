@@ -46,7 +46,9 @@ function LabPhoto({ photoKey, testName, autoCaption, buttonLabel = "Add photo" }
       const caption = autoCaption || testName;
       uploadTestPhoto(photoKey, dataUrl, caption, testName, "");
       setCaptionDraft(caption);
-    } catch { /* ignore */ } finally {
+    } catch (err) {
+      useSessionStore.setState({ photoError: err?.message || "That photo could not be processed. Try a JPG/PNG or take a new photo." });
+    } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
     }

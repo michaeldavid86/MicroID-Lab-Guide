@@ -813,6 +813,8 @@ export const flowchartTestOrder = {
   ],
   gramPositiveCoccus: [
     "catalase",
+    "oxidase",
+    "glucoseFermentation",
     "coagulase",
     "mannitolSalt",
     "hemolysis",

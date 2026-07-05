@@ -205,7 +205,7 @@ export const getFlowchartById = (id) =>
 
 // Map gram reaction + shape to a flowchart section ID
 export const getFlowchartId = (gramReaction, shape) => {
-  if (gramReaction === "positive" && shape === "rod") return "gramPositiveRod";
+  if (gramReaction === "positive" && (shape === "rod" || shape === "coccobacillus")) return "gramPositiveRod";
   if (gramReaction === "positive" && shape === "coccus") return "gramPositiveCoccus";
   if (gramReaction === "negative" && (shape === "rod" || shape === "coccobacillus")) return "gramNegativeRod";
   if (gramReaction === "negative" && shape === "coccus") return "gramNegativeCoccus";

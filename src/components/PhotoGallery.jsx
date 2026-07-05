@@ -1,7 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Image, Camera, Trash2, BookOpen, FlaskConical, ChevronDown, ChevronUp, Search } from "lucide-react";
 import { useSessionStore } from "../stores/useSessionStore";
 import { useNavigate } from "react-router";
+
+// Close an overlay (lightbox) on Escape while it is open
+function useEscapeToClose(active, onClose) {
+  useEffect(() => {
+    if (!active) return;
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [active, onClose]);
+}
 
 // ─── Reference gallery data (static, for learning) ────────────────────────────
 // Images sourced from Wikimedia Commons (CC BY-SA) and CDC PHIL (public domain)
@@ -49,6 +59,7 @@ function PhotoCard({ photoKey, photo }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(photo.caption ?? "");
   const [lightbox, setLightbox] = useState(false);
+  useEscapeToClose(lightbox, () => setLightbox(false));
 
   const saveCaption = () => {
     updatePhotoCaption(photoKey, draft);
@@ -130,6 +141,9 @@ function PhotoCard({ photoKey, photo }) {
       {/* Lightbox */}
       {lightbox && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Photo: ${photo.testName}`}
           className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
           onClick={() => setLightbox(false)}
         >
@@ -141,6 +155,7 @@ function PhotoCard({ photoKey, photo }) {
             {photo.caption && <p className="text-center text-white/70 text-xs mt-1 italic">{photo.caption}</p>}
             <button
               onClick={() => setLightbox(false)}
+              aria-label="Close photo viewer"
               className="absolute top-2 right-2 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition-colors"
             >
               ✕
@@ -155,6 +170,7 @@ function PhotoCard({ photoKey, photo }) {
 // ─── Reference image card ─────────────────────────────────────────────────────
 function ReferenceCard({ item }) {
   const [lightbox, setLightbox] = useState(false);
+  useEscapeToClose(lightbox, () => setLightbox(false));
 
   return (
     <>
@@ -188,6 +204,9 @@ function ReferenceCard({ item }) {
       {/* Lightbox */}
       {lightbox && item.photo && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Reference photo: ${item.testName} — ${item.label}`}
           className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
           onClick={() => setLightbox(false)}
         >
@@ -198,6 +217,7 @@ function ReferenceCard({ item }) {
             {item.credit && <p className="text-center text-white/50 text-xs mt-1">{item.credit}</p>}
             <button
               onClick={() => setLightbox(false)}
+              aria-label="Close photo viewer"
               className="absolute top-2 right-2 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition-colors"
             >
               ✕

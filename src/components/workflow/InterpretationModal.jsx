@@ -4,7 +4,7 @@
 // Enforces the pedagogical model: cadets observe → interpret → record.
 
 import { useState, useMemo } from "react";
-import { Lightbulb, CheckCircle2, ArrowRight, ChevronRight, RotateCcw } from "lucide-react";
+import { Lightbulb, CheckCircle2, ArrowRight, ChevronRight, RotateCcw, AlertTriangle } from "lucide-react";
 import Modal from "../shared/Modal";
 
 // ─── Result derivation from step answers ─────────────────────────────────────
@@ -291,18 +291,32 @@ export default function InterpretationModal({ test, isOpen, onClose, onRecord })
         {/* ── RESULT PHASE ───────────────────────────────────────────── */}
         {phase === "result" && (
           <div className="space-y-4">
-            {/* Derived result chip */}
-            <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-xl">
-              <CheckCircle2 className="w-6 h-6 text-green-500 flex-shrink-0" />
-              <div>
-                <p className="text-xs font-medium text-green-700 dark:text-green-400 uppercase tracking-wide mb-0.5">
-                  Derived Result
-                </p>
-                <p className={`text-base font-bold capitalize ${getResultColorClass(derivedResult)}`}>
-                  {getResultLabel(test.id, derivedResult)}
-                </p>
+            {/* Derived result chip (or inconsistency warning) */}
+            {derivedResult === null ? (
+              <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl">
+                <AlertTriangle className="w-6 h-6 text-amber-500 flex-shrink-0" />
+                <div>
+                  <p className="text-xs font-medium text-amber-700 dark:text-amber-400 uppercase tracking-wide mb-0.5">
+                    Readings don&apos;t line up
+                  </p>
+                  <p className="text-sm text-amber-800 dark:text-amber-200">
+                    Those observations are contradictory, so a result can&apos;t be derived. Tap &quot;Re-read&quot; and check your tube again.
+                  </p>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-xl">
+                <CheckCircle2 className="w-6 h-6 text-green-500 flex-shrink-0" />
+                <div>
+                  <p className="text-xs font-medium text-green-700 dark:text-green-400 uppercase tracking-wide mb-0.5">
+                    Derived Result
+                  </p>
+                  <p className={`text-base font-bold capitalize ${getResultColorClass(derivedResult)}`}>
+                    {getResultLabel(test.id, derivedResult)}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Interpretation */}
             {interpretation && (

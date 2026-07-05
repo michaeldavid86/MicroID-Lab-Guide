@@ -31,6 +31,51 @@ export function resultMatches(known, observed) {
   return false;
 }
 
+/**
+ * Are an observed Gram-stain shape and an organism's stored shape compatible?
+ * "rod" and "coccobacillus" are treated as mutually compatible (a coccobacillus
+ * is a very short rod), in BOTH directions.
+ */
+export function shapesCompatible(observedShape, orgShape) {
+  if (!observedShape) return true;
+  if (orgShape === observedShape) return true;
+  if (observedShape === "rod" && orgShape === "coccobacillus") return true;
+  if (observedShape === "coccobacillus" && orgShape === "rod") return true;
+  return false;
+}
+
+/**
+ * Some recorded tests are composite (KIA) or selective-differential (MSA) and
+ * have no 1:1 organism characteristic. Decompose an observed result into
+ * [{ char, observed }] pairs the engine can compare against organism data.
+ */
+export function decomposeObservation(testId, observed) {
+  // Mannitol Salt Agar → mannitol fermentation (yellow halo = acid)
+  if (testId === "mannitolSalt") {
+    const val = String(observed).toLowerCase() === "positive" ? "acid" : "negative";
+    return [{ char: "mannitolFermentation", observed: val }];
+  }
+  // Kligler's Iron Agar → glucose (butt), lactose (slant), and H₂S
+  if (testId === "kia" && observed && typeof observed === "object") {
+    const pairs = [];
+    if (observed.butt) pairs.push({ char: "glucoseFermentation", observed: observed.butt === "acid" ? "acid" : "negative" });
+    if (observed.slant) pairs.push({ char: "lactoseFermentation", observed: observed.slant === "acid" ? "acid" : "negative" });
+    if (observed.h2s) pairs.push({ char: "h2s", observed: observed.h2s });
+    return pairs;
+  }
+  return [{ char: testId, observed }];
+}
+
+/**
+ * Representative characteristic key used to rank a (possibly composite) test's
+ * discrimination value.
+ */
+function rankingChar(testId) {
+  if (testId === "mannitolSalt") return "mannitolFermentation";
+  if (testId === "kia") return "lactoseFermentation"; // main KIA discriminator among enterics
+  return testId;
+}
+
 // ─────────────────────────────────────────────────────────────────
 // PHASE 1: GRAM STAIN FILTER
 // ─────────────────────────────────────────────────────────────────
@@ -42,7 +87,7 @@ export function resultMatches(known, observed) {
 export function filterByGramStain(gramReaction, shape) {
   return organisms.filter((org) => {
     if (gramReaction && org.gramReaction !== gramReaction) return false;
-    if (shape && org.shape !== shape && !(shape === "rod" && org.shape === "coccobacillus")) return false;
+    if (!shapesCompatible(shape, org.shape)) return false;
     return true;
   }).map((o) => o.id);
 }
@@ -74,24 +119,30 @@ export function runElimination(gramReaction, gramShape, testResults, observation
   const passedIds = new Set(filterByGramStain(gramReaction, gramShape));
   const eliminatedEntries = [];
 
-  // For each recorded biochemical test, try to eliminate organisms
+  // For each recorded biochemical test, try to eliminate organisms.
+  // Composite tests (KIA, MSA) are decomposed into their underlying characteristics.
   for (const [testId, entry] of Object.entries(testResults || {})) {
     const observed = entry.result;
     if (observed === null || observed === undefined) continue;
+    const pairs = decomposeObservation(testId, observed);
 
     for (const org of organisms) {
       if (!passedIds.has(org.id)) continue; // Already eliminated
 
-      const known = org.characteristics?.[testId];
-      if (!resultMatches(known, observed)) {
-        eliminatedEntries.push({
-          organismId: org.id,
-          name: org.name,
-          eliminatedBy: testId,
-          expected: known ?? "no data",
-          observed,
-        });
-        passedIds.delete(org.id);
+      for (const { char, observed: obsVal } of pairs) {
+        if (obsVal === null || obsVal === undefined) continue;
+        const known = org.characteristics?.[char];
+        if (!resultMatches(known, obsVal)) {
+          eliminatedEntries.push({
+            organismId: org.id,
+            name: org.name,
+            eliminatedBy: testId,
+            expected: known ?? "no data",
+            observed: typeof observed === "object" ? obsVal : observed,
+          });
+          passedIds.delete(org.id);
+          break; // one elimination per test per organism
+        }
       }
     }
   }
@@ -170,12 +221,14 @@ export function calcDiscriminationValue(testId, remainingIds) {
   // Get candidate organisms
   const candidates = organisms.filter((o) => remainingIds.includes(o.id));
 
-  // Group by known result for this test
+  // Group by known result for this test (composite tests rank by their
+  // representative characteristic, e.g. mannitolSalt → mannitolFermentation)
+  const char = rankingChar(testId);
   const groups = {}; // result string → count
   let variableCount = 0;
 
   for (const org of candidates) {
-    const known = org.characteristics?.[testId];
+    const known = org.characteristics?.[char];
     if (known === undefined || known === null || known === "variable") {
       variableCount++;
     } else {
@@ -259,8 +312,8 @@ export function runSanityCheck(proposedOrganismId, gramReaction, gramShape, test
     });
   }
 
-  // Check cell shape
-  if (gramShape && org.shape !== gramShape && !(gramShape === "rod" && org.shape === "coccobacillus")) {
+  // Check cell shape (rod/coccobacillus compatible in both directions)
+  if (gramShape && !shapesCompatible(gramShape, org.shape)) {
     conflicts.push({
       test: "gramShape",
       testName: "Cell Shape",
@@ -290,33 +343,24 @@ export function runSanityCheck(proposedOrganismId, gramReaction, gramShape, test
     }
   }
 
-  // Check each biochemical test result
+  // Check each biochemical test result (composite tests decomposed)
   for (const [testId, entry] of Object.entries(testResults || {})) {
     const observed = entry.result;
     if (observed === null || observed === undefined) continue;
+    const testName = tests.find((t) => t.id === testId)?.name || testId;
 
-    const known = org.characteristics?.[testId];
-    if (known === undefined || known === null) continue;
+    for (const { char, observed: obsVal } of decomposeObservation(testId, observed)) {
+      if (obsVal === null || obsVal === undefined) continue;
+      const known = org.characteristics?.[char];
+      if (known === undefined || known === null) continue;
 
-    if (known === "variable") {
-      conflicts.push({
-        test: testId,
-        testName: tests.find((t) => t.id === testId)?.name || testId,
-        expected: "variable (strain-dependent)",
-        observed,
-        severity: "info",
-      });
-      continue;
-    }
-
-    if (!resultMatches(known, observed)) {
-      conflicts.push({
-        test: testId,
-        testName: tests.find((t) => t.id === testId)?.name || testId,
-        expected: known,
-        observed,
-        severity: "warning",
-      });
+      if (known === "variable") {
+        conflicts.push({ test: char, testName, expected: "variable (strain-dependent)", observed: obsVal, severity: "info" });
+        continue;
+      }
+      if (!resultMatches(known, obsVal)) {
+        conflicts.push({ test: char, testName, expected: known, observed: obsVal, severity: "warning" });
+      }
     }
   }
 
@@ -324,9 +368,9 @@ export function runSanityCheck(proposedOrganismId, gramReaction, gramShape, test
   const warnings = conflicts.filter((c) => c.severity === "warning").length;
   const infos = conflicts.filter((c) => c.severity === "info").length;
 
-  const totalChecks = 2 + Object.keys(testResults || {}).length;
-  const penaltyScore = critical * 30 + warnings * 10 + infos * 2;
-  const score = Math.max(0, Math.round(100 - (penaltyScore / totalChecks)));
+  // Absolute penalties so that adding conflicts always lowers the score
+  // (dividing by a growing denominator previously let the score rise).
+  const score = Math.max(0, 100 - (critical * 40 + warnings * 12 + infos * 3));
 
   return {
     passed: critical === 0 && warnings === 0,

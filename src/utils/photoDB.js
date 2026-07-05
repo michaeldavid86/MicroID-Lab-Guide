@@ -78,6 +78,10 @@ export function getAllPhotos() {
           }
         };
         cursorReq.onerror = () => reject(cursorReq.error);
+        // Guard against a transaction that aborts/errors mid-read so the
+        // promise never hangs (which would stall hydratePhotos forever).
+        t.onerror = () => reject(t.error);
+        t.onabort = () => reject(t.error || new Error("IndexedDB read transaction aborted."));
       })
   );
 }

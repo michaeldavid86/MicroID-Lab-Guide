@@ -309,7 +309,10 @@ export const useSessionStore = create(
           const existing = state.testPhotos[photoKey];
           if (!existing) return {};
           const updated = { ...existing, caption };
-          putPhoto(photoKey, updated).catch((err) => console.error("Caption save failed:", err));
+          putPhoto(photoKey, updated).catch((err) => {
+            console.error("Caption save failed:", err);
+            set({ photoError: "A photo caption may not have been saved to this device. Download a backup to be safe." });
+          });
           return {
             testPhotos: { ...state.testPhotos, [photoKey]: updated },
             lastModifiedAt: new Date().toISOString(),
@@ -372,12 +375,37 @@ export const useSessionStore = create(
 
       loadSession: (snapshot) => {
         set({ ...snapshot, photoError: null });
-        // Mirror restored photos into IndexedDB (replacing any existing ones)
+        // Cached derived arrays in the backup may be stale (e.g. organism DB
+        // changed between app versions) — recompute from the restored observations.
+        const s = get();
+        set(recomputeDerived(
+          s.gramStain,
+          s.testResults,
+          { endospore: s.endosporeResult, acidFast: s.acidFastResult, capsule: s.capsuleResult },
+          s.flowchartSectionId
+        ));
+        // Mirror restored photos into IndexedDB. Don't gate the write on a
+        // successful clear (a failed clear must not resurrect old photos or drop new ones).
         const photos = snapshot.testPhotos || {};
         clearPhotos()
+          .catch(() => {})
           .then(() => Promise.allSettled(Object.entries(photos).map(([k, r]) => putPhoto(k, r))))
-          .catch((err) => console.error("Photo restore failed:", err));
+          .then((results) => {
+            if (results && results.some((r) => r.status === "rejected")) {
+              set({ photoError: "Some restored photos may not have saved to this device. Keep your backup file." });
+            }
+          });
       },
+
+      // Recompute derived engine state from current observations (used on app
+      // mount to correct any stale persisted candidate/elimination arrays).
+      recompute: () =>
+        set((state) => recomputeDerived(
+          state.gramStain,
+          state.testResults,
+          { endospore: state.endosporeResult, acidFast: state.acidFastResult, capsule: state.capsuleResult },
+          state.flowchartSectionId
+        )),
 
       // Returns a complete snapshot of all session data for backup/restore
       getSnapshot: () => {

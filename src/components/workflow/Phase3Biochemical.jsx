@@ -116,8 +116,8 @@ function TestPhotoUpload({ testId, testName, recordedResult }) {
       const defaultCaption = `${testName}${recordedResult ? ` — ${recordedResult}` : ""}`;
       uploadTestPhoto(testId, dataUrl, defaultCaption, testName, recordedResult);
       setCaptionDraft(defaultCaption);
-    } catch {
-      // silently fail — user can retry
+    } catch (err) {
+      useSessionStore.setState({ photoError: err?.message || "That photo could not be processed. Try a JPG/PNG or take a new photo." });
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -341,8 +341,8 @@ function TestCard({ test, recorded, ranking, onRecord, onRemove }) {
             </div>
           )}
 
-          {/* ── MANUAL RESULT ENTRY (no interp, or override) ──────────── */}
-          {(!hasInterpretation || showManualOverride) && (
+          {/* ── MANUAL RESULT ENTRY (no interp & not yet recorded, or override) ── */}
+          {((!hasInterpretation && !hasResult) || showManualOverride) && (
             <div className="space-y-3">
               {showManualOverride && (
                 <p className="text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg px-2 py-1.5">

@@ -4,7 +4,7 @@ import { organisms } from "../data/organisms";
 import { tests } from "../data/tests";
 import Card from "./shared/Card";
 import Badge from "./shared/Badge";
-import { ClipboardList, CheckCircle2, ArrowRight } from "lucide-react";
+import { ClipboardList, CheckCircle2, Circle, ArrowRight } from "lucide-react";
 
 function ResultCell({ result }) {
   if (result === undefined || result === null) {
@@ -20,8 +20,13 @@ function ResultCell({ result }) {
   const lc = String(result).toLowerCase();
   const isPos = lc === "positive" || lc === "acid" || lc === "acid and gas" || lc === "sensitive" || lc === "alpha" || lc === "beta";
   const isNeg = lc === "negative" || lc === "resistant" || lc === "gamma";
+  const colorClass = isPos
+    ? "text-green-700 dark:text-green-400"
+    : isNeg
+    ? "text-red-700 dark:text-red-400"
+    : "text-amber-700 dark:text-amber-400";
   return (
-    <span className={`font-medium capitalize text-sm ${isPos ? "text-positive" : isNeg ? "text-negative" : "text-variable"}`}>
+    <span className={`font-medium capitalize text-sm ${colorClass}`}>
       {result}
     </span>
   );
@@ -40,10 +45,12 @@ export default function DataSheet() {
   const colonyMorphology = useSessionStore((s) => s.colonyMorphology);
   const testResults = useSessionStore((s) => s.testResults);
   const proposedOrganismId = useSessionStore((s) => s.proposedOrganismId);
+  const customOrganismName = useSessionStore((s) => s.customOrganismName);
   const identificationConfirmed = useSessionStore((s) => s.identificationConfirmed);
   const identificationConfidence = useSessionStore((s) => s.identificationConfidence);
 
   const proposedOrg = proposedOrganismId ? organisms.find((o) => o.id === proposedOrganismId) : null;
+  const proposedName = proposedOrg?.name || customOrganismName;
 
   // Empty state — no investigation started
   if (!cadetName && !incident?.scenario) {
@@ -160,19 +167,20 @@ export default function DataSheet() {
       </Card>
 
       {/* Final ID */}
-      {proposedOrg && (
+      {proposedName && (
         <Card className={identificationConfirmed ? "border-green-300 dark:border-green-700" : ""}>
           <div className="flex items-center gap-2 mb-2">
             {identificationConfirmed
               ? <CheckCircle2 className="w-5 h-5 text-green-500" />
-              : <Circle className="w-5 h-5 text-slate-300" />}
+              : <Circle className="w-5 h-5 text-slate-300 dark:text-slate-600" />}
             <span className="font-semibold text-slate-900 dark:text-slate-100">
               {identificationConfirmed ? "Confirmed Identification" : "Proposed Identification"}
             </span>
           </div>
-          <p className="text-lg font-bold italic text-usafa-blue dark:text-blue-400">{proposedOrg.name}</p>
+          <p className="text-lg font-bold italic text-usafa-blue dark:text-blue-400">{proposedName}</p>
           <div className="flex flex-wrap gap-2 mt-2">
-            <Badge variant={`bsl${proposedOrg.bslLevel}`}>BSL-{proposedOrg.bslLevel}</Badge>
+            {proposedOrg && <Badge variant={`bsl${proposedOrg.bslLevel}`}>BSL-{proposedOrg.bslLevel}</Badge>}
+            {customOrganismName && !proposedOrg && <Badge variant="info">Write-in ID</Badge>}
             {identificationConfidence && (
               <Badge variant={identificationConfidence === "high" ? "positive" : identificationConfidence === "medium" ? "variable" : "critical"}>
                 {identificationConfidence} confidence
