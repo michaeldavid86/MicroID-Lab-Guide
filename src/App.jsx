@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router";
 import { X } from "lucide-react";
 import { useAppStore } from "./stores/useAppStore";
@@ -12,61 +12,6 @@ import DataSheet from "./components/DataSheet";
 import ReferenceLibrary from "./components/ReferenceLibrary";
 import PhotoGallery from "./components/PhotoGallery";
 import ExportView from "./components/ExportView";
-
-// ── TEMPORARY diagnostic: reports how this device measures the viewport, so the
-// bottom-nav position can be fixed deterministically. Removed after diagnosis. ──
-function ViewportProbe() {
-  const [d, setD] = useState(null);
-  useEffect(() => {
-    const measure = (css) => {
-      const el = document.createElement("div");
-      el.style.cssText = `position:fixed;left:-9999px;top:0;width:1px;height:${css};`;
-      document.body.appendChild(el);
-      const h = el.getBoundingClientRect().height;
-      el.remove();
-      return Math.round(h);
-    };
-    const run = () => {
-      const nav = document.querySelector("nav");
-      setD({
-        inner: window.innerHeight,
-        client: document.documentElement.clientHeight,
-        visual: window.visualViewport ? Math.round(window.visualViewport.height) : 0,
-        screen: window.screen ? window.screen.height : 0,
-        dvh: measure("100dvh"),
-        svh: measure("100svh"),
-        lvh: measure("100lvh"),
-        safeT: measure("env(safe-area-inset-top)"),
-        safeB: measure("env(safe-area-inset-bottom)"),
-        navBottom: nav ? Math.round(nav.getBoundingClientRect().bottom) : 0,
-      });
-    };
-    run();
-    const t1 = setTimeout(run, 400);
-    const t2 = setTimeout(run, 1500);
-    window.addEventListener("resize", run);
-    if (window.visualViewport) window.visualViewport.addEventListener("resize", run);
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      window.removeEventListener("resize", run);
-      if (window.visualViewport) window.visualViewport.removeEventListener("resize", run);
-    };
-  }, []);
-  if (!d) return null;
-  return (
-    <>
-      <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 99999, background: "rgba(0,0,0,0.92)", color: "#4ade80", font: "12px/1.55 ui-monospace,monospace", padding: "8px 10px", whiteSpace: "pre-wrap" }}>
-        {`inner:${d.inner}  client:${d.client}  visual:${d.visual}  screen:${d.screen}
-dvh:${d.dvh}  svh:${d.svh}  lvh:${d.lvh}
-safeTop:${d.safeT}  safeBottom:${d.safeB}  navBottom:${d.navBottom}`}
-      </div>
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 99999, background: "rgba(220,38,38,0.75)", color: "#fff", font: "11px/1.5 ui-monospace,monospace", textAlign: "center", padding: "2px 0" }}>
-        ▲ this red bar is CSS bottom:0
-      </div>
-    </>
-  );
-}
 
 export default function App() {
   const initDarkMode = useAppStore((s) => s.initDarkMode);
@@ -111,7 +56,6 @@ export default function App() {
         </ErrorBoundary>
       </main>
       <TabBar />
-      <ViewportProbe />
     </div>
   );
 }
