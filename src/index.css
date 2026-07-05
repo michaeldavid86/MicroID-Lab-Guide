@@ -37,15 +37,11 @@ body {
   overflow: hidden;
 }
 
-/* App shell height. Use the LARGE viewport (lvh) — on iOS standalone PWAs the
-   DYNAMIC viewport (dvh / 100vh / window.innerHeight) is reported short (it
-   subtracts the Dynamic Island / status-bar area and only grows to full on a
-   scroll), which left the bottom nav floating high. lvh is the full screen and
-   is stable from first paint. dvh is kept only as a fallback for old engines. */
-.h-app {
-  height: 100dvh;
-  height: 100lvh;
-}
+/* NOTE: the app shell no longer uses any viewport height unit. iOS standalone
+   PWAs report dvh/lvh/vh/innerHeight inconsistently (dvh comes back short of the
+   real screen and only grows on scroll). Instead App.jsx anchors the header to
+   position:fixed top:0 and the nav to position:fixed bottom:0 (both reliable),
+   and positions the scrollable content between their measured heights. */
 
 /* ── iPhone safe-area helpers ──────────────────────────────────────────────── *
  * viewport-fit=cover lets us paint behind the notch/Dynamic Island and home  *
