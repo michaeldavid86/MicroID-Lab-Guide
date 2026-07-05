@@ -20,16 +20,21 @@ html {
   scroll-behavior: smooth;
 }
 
-/* JS-driven viewport height (set in index.html). Falls back to 100dvh.
-   Avoids the iOS standalone-PWA bug where 100dvh is initially too short and
-   only corrects after a scroll, leaving the bottom nav floating high. */
-.h-app {
-  height: var(--app-height, 100dvh);
+/* Full-screen app shell via a percentage-height chain. Percentage heights
+   resolve against the layout viewport (the full screen with viewport-fit=cover)
+   and are computed correctly at first paint — unlike 100dvh/100vh/window.innerHeight,
+   which iOS reports too short (or excluding the home-indicator area) in a
+   standalone PWA until a scroll forces a reflow. The page itself never scrolls;
+   the <main> region scrolls internally. */
+html,
+body,
+#root {
+  height: 100%;
 }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  min-height: 100dvh;
+  overflow: hidden;
 }
 
 /* ── iPhone safe-area helpers ──────────────────────────────────────────────── *
