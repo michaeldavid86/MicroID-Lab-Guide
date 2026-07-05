@@ -20,29 +20,6 @@
         if (dark) document.documentElement.classList.add("dark");
       } catch (e) {}
     </script>
-    <!-- Size the app shell to the full physical screen. In an iOS standalone
-         PWA, 100dvh/100vh/window.innerHeight can come back SHORTER than the
-         screen (excluding the home-indicator area), leaving the bottom nav
-         floating above the bottom. window.screen.height is the true screen
-         height and is stable from launch, so use the largest reliable value. -->
-    <script>
-      (function () {
-        function setAppHeight() {
-          var iv = window.innerHeight || document.documentElement.clientHeight || 0;
-          var sc = (window.screen && window.screen.height) || 0;
-          // Only bump up to the physical screen height when it exceeds the
-          // reported viewport by a safe-area-sized amount (a real iOS standalone
-          // PWA). If it differs wildly (desktop, preview emulator, iPad split
-          // view) trust the viewport so we never overshoot and cut off the nav.
-          var h = (sc > iv && sc - iv <= 120) ? sc : iv;
-          if (h) document.documentElement.style.setProperty("--app-height", h + "px");
-        }
-        setAppHeight();
-        ["resize", "orientationchange", "pageshow", "load"].forEach(function (evt) {
-          window.addEventListener(evt, setAppHeight);
-        });
-      })();
-    </script>
   </head>
   <body class="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
     <div id="root"></div>
