@@ -8,8 +8,10 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
-      injectRegister: 'auto',
+      // 'prompt': a new version waits until the user taps "Update" (see
+      // UpdatePrompt.jsx) instead of silently swapping files mid-session.
+      registerType: 'prompt',
+      injectRegister: false,
       includeAssets: ['favicon-48.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'MicroID Lab Guide',

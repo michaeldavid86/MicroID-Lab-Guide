@@ -9,7 +9,7 @@ Department of Biology
 
 ## Overview
 
-MicroID Lab Guide is a free, open-source progressive web application (PWA) designed to guide undergraduate students through the systematic identification of unknown bacterial isolates. Originally developed for USAFA's Bio 431 (Microbiology) unknown identification lab, the app replaces paper-based data sheets with a structured, mobile-friendly digital workflow that enforces proper microbiological reasoning at each decision point.
+MicroID Lab Guide is a free, open-source progressive web application (PWA) designed to guide undergraduate students through the systematic identification of unknown bacterial isolates. Originally developed for USAFA's Bio 431 (Operational Microbiology) unknown identification lab, the app replaces paper-based data sheets with a structured, mobile-friendly digital workflow that enforces proper microbiological reasoning at each decision point.
 
 The application runs entirely in the browser with no backend server, no user accounts, and no data collection. All student data remains on-device in local storage, with optional JSON backup/restore for multi-session lab work.
 
@@ -25,7 +25,7 @@ MicroID Lab Guide supports this exercise by:
 2. **Providing real-time differential narrowing** -- a decision engine eliminates candidate organisms as test results are recorded, making the diagnostic reasoning process visible
 3. **Scaffolding test interpretation** -- guided step-by-step interpretation modals walk students through multi-observation tests (e.g., KIA slant/butt/gas/H2S, fermentation acid/gas production) before deriving results
 4. **Integrating photo documentation** -- students capture images of Gram stains, colony morphology, and individual test results directly from their phone cameras
-5. **Generating formatted deliverables** -- printable identification data sheets and Commander's Risk Assessment Memos are produced directly from recorded data
+5. **Generating formatted deliverables** -- PDF identification data sheets and Commander's Risk Assessment Memos are produced directly from recorded data
 
 ---
 
@@ -35,14 +35,14 @@ MicroID Lab Guide supports this exercise by:
 
 | Phase | Name | Description |
 |-------|------|-------------|
-| 1 | Initial Observations | Gram stain (reaction, shape, arrangement), endospore stain, acid-fast stain, colony morphology, photo documentation |
-| 2 | Flowchart Routing | Automated routing to the appropriate diagnostic branch based on Gram reaction and cell shape (e.g., Gram-positive cocci, Gram-negative rods) |
-| 3 | Biochemical Testing | Test selection from a prioritized list (ranked by discrimination value), result recording with guided interpretation, photo upload per test |
+| 1 | Initial Observations | Gram stain (reaction, shape, arrangement), endospore, acid-fast, and capsule stains, colony morphology, photo documentation |
+| 2 | Flowchart Routing | Automated routing to the appropriate diagnostic branch based on Gram reaction and cell shape (e.g., Gram-positive cocci, Gram-negative rods), with the full decision tree shown and the student's path highlighted as results are recorded |
+| 3 | Biochemical Testing | Test selection from a prioritized list (ranked by discrimination value), result recording with guided interpretation, photo upload per test, and a plain-language explanation of why each organism was ruled out |
 | 4 | Final Identification | Organism selection from remaining candidates, automated sanity check against recorded results, confidence assessment |
 
 ### Decision Engine
 
-The app includes a rule-based differential elimination engine that operates against a database of 37 organisms commonly encountered in clinical and environmental microbiology courses. The engine:
+The app includes a rule-based differential elimination engine that operates against a database of 39 organisms commonly encountered in clinical and environmental microbiology courses. The engine:
 
 - Filters organisms by Gram reaction and cell shape after Phase 1
 - Eliminates candidates whose expected test results conflict with observed results after each Phase 3 entry
@@ -62,7 +62,7 @@ Each modal derives the final result from the student's observations, displays th
 
 ### Organism Database
 
-The application includes profiles for 37 organisms across BSL-1 and BSL-2 classifications, each containing:
+The application includes profiles for 39 organisms across BSL-1 and BSL-2 classifications, each containing:
 
 - Expected Gram stain and morphological characteristics
 - Expected results for all available biochemical tests
@@ -123,26 +123,53 @@ src/
       WorkflowContainer.jsx    # Phase state machine + stepper
       Phase1Initial.jsx        # Gram stain + morphology + photo upload
       Phase2Flowchart.jsx      # Diagnostic branch routing
+      FlowchartTree.jsx        # Decision tree with the path taken highlighted
       Phase3Biochemical.jsx    # Test cards + guided interpretation
       Phase4FinalId.jsx        # Organism selection + sanity check
       InterpretationModal.jsx  # Step-by-step result derivation wizard
   data/
-    organisms.js               # 37 organism profiles
-    tests.js                   # 67 test/media/stain definitions
+    organisms.js               # 39 organism profiles
+    tests.js                   # 44 test and stain definitions
     flowcharts.js              # Diagnostic branching logic
+    courseConfig.js            # Course-wide default for unavailable tests
   stores/
     useSessionStore.js         # Zustand session state (persisted)
-    useAppStore.js             # App preferences (dark mode)
+    useAppStore.js             # App preferences, course setup, answer key
   utils/
     decisionEngine.js          # Elimination, ranking, sanity check
     photoUtils.js              # Camera image compression
+    courseConfig.js            # Class codes, unknown pool, identifiability check
+    flowPath.js                # Resolves the flowchart path from recorded results
+    grading.js                 # Answer-key grading and class summary CSV
+    pdfExport.js               # Data sheet and memo PDF generation
+tests/
+  unknowns.test.js             # Regression tests (run with: npm test)
 ```
+
+---
+
+## Course Setup and Instructor Tools
+
+The gear icon in the header opens **Course Setup**, which needs no server or account:
+
+- **Tests available** -- switch off any test the classroom does not stock. Hidden tests are removed from the workflow and from the recommended-test ranking; results already recorded are kept.
+- **Unknown pool** -- choose which organisms are in this semester's pool of assigned unknowns (marked with a star for students). Organisms outside the pool stay in the database so contaminants can still be recognized.
+- **Identifiability check** -- the screen warns when two pool organisms can no longer be separated with the tests that remain.
+- **Class code** -- a short code (e.g., `MID-3F0A`) captures the setup; students type it into the same screen to match the instructor's configuration. Course-wide defaults can also be set in `src/data/courseConfig.js`.
+
+**Instructor Tools** (linked from Course Setup) provide:
+
+- **Answer key** -- culture number to organism, stored only in the instructor's browser. It is never part of the published app, class codes, or student backup files.
+- **Answer check** -- load students' backup files (or check the device in hand) to see each final identification marked correct or incorrect against the key.
+- **Class summary** -- export the graded list as a CSV file.
 
 ---
 
 ## Export Outputs
 
-### Identification Data Sheet (Print to PDF)
+Both documents are generated on the device as PDF files (shared through the system share sheet on phones, downloaded directly on computers), with a print option as a fallback.
+
+### Identification Data Sheet (PDF)
 
 A formatted data sheet containing:
 - Cadet name, lab section, culture number, date

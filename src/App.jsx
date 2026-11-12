@@ -5,6 +5,7 @@ import { useAppStore } from "./stores/useAppStore";
 import { useSessionStore } from "./stores/useSessionStore";
 import Header from "./components/layout/Header";
 import TabBar from "./components/layout/TabBar";
+import UpdatePrompt from "./components/shared/UpdatePrompt";
 import ErrorBoundary from "./components/shared/ErrorBoundary";
 import Dashboard from "./components/Dashboard";
 import WorkflowContainer from "./components/workflow/WorkflowContainer";
@@ -12,6 +13,8 @@ import DataSheet from "./components/DataSheet";
 import ReferenceLibrary from "./components/ReferenceLibrary";
 import PhotoGallery from "./components/PhotoGallery";
 import ExportView from "./components/ExportView";
+import CourseSetup from "./components/CourseSetup";
+import InstructorTools from "./components/InstructorTools";
 
 export default function App() {
   const initDarkMode = useAppStore((s) => s.initDarkMode);
@@ -63,6 +66,7 @@ export default function App() {
       {/* Header — anchored to the true top edge */}
       <div id="app-header" className="fixed top-0 inset-x-0 z-40">
         <Header />
+        <UpdatePrompt />
         {photoError && (
           <div className="flex items-start gap-2 px-4 py-2 bg-amber-100 dark:bg-amber-950 border-b border-amber-300 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200">
             <span className="flex-1">{photoError}</span>
@@ -93,6 +97,8 @@ export default function App() {
             <Route path="/datasheet" element={<div className="h-full overflow-y-auto"><DataSheet /></div>} />
             <Route path="/reference" element={<div className="h-full flex flex-col"><ReferenceLibrary /></div>} />
             <Route path="/gallery" element={<div className="h-full flex flex-col"><PhotoGallery /></div>} />
+            <Route path="/instructor" element={<div className="h-full overflow-y-auto"><InstructorTools /></div>} />
+            <Route path="/setup" element={<div className="h-full overflow-y-auto"><CourseSetup /></div>} />
             <Route path="/export" element={<div className="h-full overflow-y-auto"><ExportView /></div>} />
           </Routes>
         </ErrorBoundary>

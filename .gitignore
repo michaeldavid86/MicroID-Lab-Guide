@@ -7,3 +7,4 @@ dist
 MicroID_Screenshots/
 screenshots/
 scripts/
+.netlify/

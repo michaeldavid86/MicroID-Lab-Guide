@@ -1,14 +1,18 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useSessionStore } from "../../stores/useSessionStore";
+import { useAppStore } from "../../stores/useAppStore";
 import { organisms as allOrganisms } from "../../data/organisms";
 import { tests, flowchartTestOrder } from "../../data/tests";
 import { compressImage } from "../../utils/photoUtils";
 import Card from "../shared/Card";
 import Badge from "../shared/Badge";
 import InterpretationModal from "./InterpretationModal";
+import FlowchartTree from "./FlowchartTree";
+import { flowchartSections } from "../../data/flowcharts";
+import { usePoolIds } from "../../utils/usePool";
 import {
   FlaskConical, ChevronRight, ChevronDown, CheckCircle2,
-  XCircle, Info, Lightbulb, BookOpen, Camera, Trash2, Loader2
+  XCircle, Info, Lightbulb, BookOpen, Camera, Trash2, Loader2, GitBranch
 } from "lucide-react";
 
 // Discrimination badge
@@ -416,34 +420,115 @@ function TestCard({ test, recorded, ranking, onRecord, onRemove }) {
 }
 
 // Ruled out panel
+// Human-readable names for the characteristics a composite test reports.
+const CHARACTERISTIC_LABELS = {
+  glucoseFermentation: "glucose fermentation (butt)",
+  lactoseFermentation: "lactose fermentation (slant)",
+  h2s: "H₂S production",
+  mannitolFermentation: "mannitol fermentation",
+};
+
+// Turn one elimination record into a plain-language explanation.
+function explainElimination(e) {
+  const testDef = tests.find((t) => t.id === e.eliminatedBy);
+  const name = testDef?.name || e.eliminatedBy.replace(/^./, (c) => c.toUpperCase());
+  const sub =
+    e.characteristic && e.characteristic !== e.eliminatedBy && CHARACTERISTIC_LABELS[e.characteristic]
+      ? ` — ${CHARACTERISTIC_LABELS[e.characteristic]}`
+      : "";
+  return {
+    testName: name + sub,
+    sentence: `You recorded ${String(e.observed)}, but this organism is typically ${String(e.expected)}.`,
+    principle: testDef?.firstPrinciple || null,
+    removable: !!testDef && testDef.phase !== 1,
+  };
+}
+
 function RuledOutPanel({ eliminatedEntries }) {
   const [expanded, setExpanded] = useState(false);
+  const [openKey, setOpenKey] = useState(null);
   if (eliminatedEntries.length === 0) return null;
   return (
     <div className="rounded-xl border border-red-200 dark:border-red-800 overflow-hidden">
       <button
         onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
         className="w-full flex items-center justify-between px-4 py-3 bg-red-50 dark:bg-red-950/30 text-left"
       >
         <div className="flex items-center gap-2">
           <XCircle className="w-4 h-4 text-red-500" />
           <span className="text-sm font-medium text-red-800 dark:text-red-200">
-            Ruled Out ({eliminatedEntries.length})
+            Ruled Out ({eliminatedEntries.length}) — tap to see why
           </span>
         </div>
         <ChevronDown className={`w-4 h-4 text-red-400 transition-transform ${expanded ? "rotate-180" : ""}`} />
       </button>
       {expanded && (
         <div className="divide-y divide-red-100 dark:divide-red-900">
-          {eliminatedEntries.map((e) => (
-            <div key={`${e.organismId}-${e.eliminatedBy}`} className="px-4 py-2.5 bg-white dark:bg-slate-800">
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300 italic">{e.name}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Eliminated by <span className="font-medium">{e.eliminatedBy}</span>
-                {" "}(expected: {String(e.expected)}, observed: {String(e.observed)})
-              </p>
-            </div>
-          ))}
+          {eliminatedEntries.map((e) => {
+            const key = `${e.organismId}-${e.eliminatedBy}`;
+            const why = explainElimination(e);
+            const open = openKey === key;
+            return (
+              <div key={key} className="px-4 py-2.5 bg-white dark:bg-slate-800">
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300 italic">{e.name}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
+                  Ruled out by <span className="font-semibold">{why.testName}</span>. {why.sentence}
+                </p>
+                {why.principle && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setOpenKey(open ? null : key)}
+                      aria-expanded={open}
+                      className="text-xs font-medium text-usafa-blue dark:text-blue-400 mt-1"
+                    >
+                      {open ? "Hide" : "Why does this test separate them?"}
+                    </button>
+                    {open && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 bg-slate-50 dark:bg-slate-700/50 rounded-lg p-2">
+                        {why.principle}
+                      </p>
+                    )}
+                  </>
+                )}
+                {why.removable && (
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                    Doubt the result? Remove that test below and this organism returns to the candidate list.
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Collapsible flowchart with the student's path highlighted.
+function FlowchartPanel({ sectionId, state, disabledTests }) {
+  const [open, setOpen] = useState(false);
+  const section = flowchartSections.find((s) => s.id === sectionId);
+  if (!section) return null;
+  return (
+    <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 text-left"
+      >
+        <div className="flex items-center gap-2">
+          <GitBranch className="w-4 h-4 text-usafa-blue dark:text-blue-400" />
+          <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
+            Flowchart — {section.label}
+          </span>
+        </div>
+        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="px-4 pb-4 pt-1 bg-white dark:bg-slate-800">
+          <FlowchartTree section={section} state={state} disabledTests={disabledTests} />
         </div>
       )}
     </div>
@@ -461,14 +546,27 @@ export default function Phase3Biochemical({ onNext }) {
   const setCurrentPhase = useSessionStore((s) => s.setCurrentPhase);
 
   const applicable = flowchartSectionId ? (flowchartTestOrder[flowchartSectionId] || []) : [];
-  const applicableTests = applicable.map((id) => tests.find((t) => t.id === id)).filter(Boolean);
+  // Hide tests the instructor marked as not stocked — unless a result was
+  // already recorded, so nothing a student entered ever disappears.
+  const disabledTests = useAppStore((s) => s.disabledTests) || [];
+  const applicableTests = applicable
+    .filter((id) => !disabledTests.includes(id) || testResults[id])
+    .map((id) => tests.find((t) => t.id === id))
+    .filter(Boolean);
+
+  const poolIds = usePoolIds();
+  const gramStain = useSessionStore((s) => s.gramStain);
+  const endosporeResult = useSessionStore((s) => s.endosporeResult);
+  const acidFastResult = useSessionStore((s) => s.acidFastResult);
+  const flowState = useMemo(
+    () => ({ testResults, endosporeResult, acidFastResult, gramStain }),
+    [testResults, endosporeResult, acidFastResult, gramStain]
+  );
 
   const rankingMap = Object.fromEntries(testRankings.map((r) => [r.testId, r]));
   const candidateOrgs = allOrganisms.filter((o) => candidateIds.includes(o.id));
 
   const completedTests = Object.keys(testResults).length;
-
-  const canProceedToFinalID = candidateIds.length <= 3 && completedTests >= 3;
 
   return (
     <div className="space-y-4">
@@ -500,22 +598,25 @@ export default function Phase3Biochemical({ onNext }) {
                 <span
                   key={org.id}
                   className={`text-xs rounded-full px-2 py-0.5 font-medium border ${
-                    org.isAssignableUnknown
+                    poolIds.has(org.id)
                       ? "bg-amber-50 border-amber-300 text-amber-800 dark:bg-amber-950 dark:border-amber-700 dark:text-amber-200"
                       : "bg-slate-100 border-slate-300 text-slate-700 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300"
                   }`}
                 >
-                  {org.isAssignableUnknown && "⭐ "}{org.name}
+                  {poolIds.has(org.id) && "⭐ "}{org.name}
                 </span>
               ))}
             </div>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5">⭐ = potential assigned unknown</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5">⭐ = in this course's unknown pool</p>
           </div>
         )}
       </Card>
 
       {/* Ruled out */}
       <RuledOutPanel eliminatedEntries={eliminatedEntries} />
+
+      {/* Flowchart with the path taken so far */}
+      <FlowchartPanel sectionId={flowchartSectionId} state={flowState} disabledTests={disabledTests} />
 
       {/* Tests */}
       <div>

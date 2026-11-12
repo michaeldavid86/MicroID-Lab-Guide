@@ -147,7 +147,7 @@ export const flowchartSections = [
         test: "motility",
         branches: [
           { result: "positive", label: "Motile → Citrate test next", next: "motileGNR" },
-          { result: "negative", label: "Nonmotile → Klebsiella / Shigella", genera: ["Klebsiella pneumoniae", "Klebsiella aerogenes", "Shigella dysenteriae"] },
+          { result: "negative", label: "Nonmotile → Klebsiella pneumoniae / Shigella", genera: ["Klebsiella pneumoniae", "Shigella dysenteriae"] },
         ],
       },
       {
@@ -155,8 +155,8 @@ export const flowchartSections = [
         id: "motileGNR",
         test: "citrate",
         branches: [
-          { result: "positive", label: "Citrate+ → Citrobacter / Enterobacter / Salmonella / Serratia", genera: ["Citrobacter freundii", "Enterobacter aerogenes", "Enterobacter cloacae", "Salmonella enterica", "Serratia marcescens"] },
-          { result: "negative", label: "Citrate− → E. coli / Proteus / Morganella", genera: ["Escherichia coli", "Proteus vulgaris", "Proteus mirabilis", "Morganella morganii"] },
+          { result: "positive", label: "Citrate+ → Citrobacter / Enterobacter / K. aerogenes / Salmonella / Serratia / Providencia (some Proteus)", genera: ["Citrobacter freundii", "Enterobacter cloacae", "Klebsiella aerogenes", "Salmonella enterica", "Serratia marcescens", "Providencia stuartii", "Proteus vulgaris", "Proteus mirabilis"] },
+          { result: "negative", label: "Citrate− → E. coli / Morganella (Proteus is variable)", genera: ["Escherichia coli", "Proteus vulgaris", "Proteus mirabilis", "Morganella morganii"] },
         ],
       },
     ],
@@ -174,12 +174,13 @@ export const flowchartSections = [
         step: 1,
         test: "oxidase",
         branches: [
-          { result: "positive", label: "Oxidase+ → Neisseria / Moraxella", genera: ["Neisseria sicca", "Moraxella catarrhalis"] },
+          { result: "positive", label: "Oxidase+ → Neisseria / Moraxella", next: "oxPosCoccus" },
           { result: "negative", label: "Oxidase− → rare; check morphology/reclassify", genera: [] },
         ],
       },
       {
         step: 2,
+        id: "oxPosCoccus",
         test: "dnase",
         branches: [
           { result: "positive", label: "DNase+ → Moraxella catarrhalis", genera: ["Moraxella catarrhalis"] },

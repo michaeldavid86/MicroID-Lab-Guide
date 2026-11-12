@@ -36,9 +36,10 @@ export function resultMatches(known, observed) {
  * "rod" and "coccobacillus" are treated as mutually compatible (a coccobacillus
  * is a very short rod), in BOTH directions.
  */
-export function shapesCompatible(observedShape, orgShape) {
+export function shapesCompatible(observedShape, orgShape, altShapes = []) {
   if (!observedShape) return true;
   if (orgShape === observedShape) return true;
+  if (altShapes.includes(observedShape)) return true; // per-organism allowance
   if (observedShape === "rod" && orgShape === "coccobacillus") return true;
   if (observedShape === "coccobacillus" && orgShape === "rod") return true;
   return false;
@@ -87,7 +88,7 @@ function rankingChar(testId) {
 export function filterByGramStain(gramReaction, shape) {
   return organisms.filter((org) => {
     if (gramReaction && org.gramReaction !== gramReaction) return false;
-    if (!shapesCompatible(shape, org.shape)) return false;
+    if (!shapesCompatible(shape, org.shape, org.altShapes)) return false;
     return true;
   }).map((o) => o.id);
 }
@@ -137,6 +138,7 @@ export function runElimination(gramReaction, gramShape, testResults, observation
             organismId: org.id,
             name: org.name,
             eliminatedBy: testId,
+            characteristic: char,
             expected: known ?? "no data",
             observed: typeof observed === "object" ? obsVal : observed,
           });
@@ -149,9 +151,12 @@ export function runElimination(gramReaction, gramShape, testResults, observation
 
   // Phase 1 stain observations — endospore and acid-fast map to top-level
   // organism booleans; capsule maps to a characteristics field.
+  // A stain left "not performed" in Phase 1 can also be recorded as a Phase 3
+  // test card; honour either entry so the candidates and flowchart agree.
+  const stainObs = (phase1, testId) => phase1 || testResults?.[testId]?.result || null;
   const boolStains = [
-    { observed: observations.endospore, prop: "endosporeForming", label: "endospore stain" },
-    { observed: observations.acidFast, prop: "acidFast", label: "acid-fast stain" },
+    { observed: stainObs(observations.endospore, "endosporeStain"), prop: "endosporeForming", label: "endospore stain" },
+    { observed: stainObs(observations.acidFast, "acidFastStain"), prop: "acidFast", label: "acid-fast stain" },
   ];
   for (const { observed, prop, label } of boolStains) {
     if (observed !== "positive" && observed !== "negative") continue;
@@ -263,12 +268,13 @@ export function calcDiscriminationValue(testId, remainingIds) {
  * Rank all applicable untested tests by discrimination value.
  * Returns array sorted descending: [{ testId, testName, discriminationValue, label }]
  */
-export function rankTests(remainingIds, testedIds, flowchartSectionId) {
+export function rankTests(remainingIds, testedIds, flowchartSectionId, unavailableIds = []) {
   const n = remainingIds.length;
   if (n <= 1) return [];
 
   const applicable = flowchartTestOrder[flowchartSectionId] || [];
-  const untested = applicable.filter((id) => !testedIds.includes(id));
+  // Tests the instructor has marked as not stocked are never recommended.
+  const untested = applicable.filter((id) => !testedIds.includes(id) && !unavailableIds.includes(id));
 
   const ranked = untested.map((testId) => {
     const testDef = tests.find((t) => t.id === testId);
@@ -313,7 +319,7 @@ export function runSanityCheck(proposedOrganismId, gramReaction, gramShape, test
   }
 
   // Check cell shape (rod/coccobacillus compatible in both directions)
-  if (gramShape && !shapesCompatible(gramShape, org.shape)) {
+  if (gramShape && !shapesCompatible(gramShape, org.shape, org.altShapes)) {
     conflicts.push({
       test: "gramShape",
       testName: "Cell Shape",
@@ -325,8 +331,8 @@ export function runSanityCheck(proposedOrganismId, gramReaction, gramShape, test
 
   // Check Phase 1 stain observations against the proposed organism
   const stainChecks = [
-    { observed: observations.endospore, prop: "endosporeForming", testName: "Endospore Stain" },
-    { observed: observations.acidFast, prop: "acidFast", testName: "Acid-Fast Stain" },
+    { observed: observations.endospore || testResults?.endosporeStain?.result || null, prop: "endosporeForming", testName: "Endospore Stain" },
+    { observed: observations.acidFast || testResults?.acidFastStain?.result || null, prop: "acidFast", testName: "Acid-Fast Stain" },
   ];
   for (const { observed, prop, testName } of stainChecks) {
     if (observed !== "positive" && observed !== "negative") continue;

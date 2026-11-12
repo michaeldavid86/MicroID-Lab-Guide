@@ -1,13 +1,24 @@
 import { ChevronRight, GitBranch } from "lucide-react";
 import { useSessionStore } from "../../stores/useSessionStore";
+import { useAppStore } from "../../stores/useAppStore";
 import { flowchartSections, getFlowchartId } from "../../data/flowcharts";
 import Card from "../shared/Card";
+import FlowchartTree from "./FlowchartTree";
+import { useMemo } from "react";
 import Badge from "../shared/Badge";
 
 export default function Phase2Flowchart({ onNext }) {
   const gramStain = useSessionStore((s) => s.gramStain);
   const flowchartSectionId = useSessionStore((s) => s.flowchartSectionId);
   const setFlowchartSection = useSessionStore((s) => s.setFlowchartSection);
+  const disabledTests = useAppStore((s) => s.disabledTests) || [];
+  const testResults = useSessionStore((s) => s.testResults);
+  const endosporeResult = useSessionStore((s) => s.endosporeResult);
+  const acidFastResult = useSessionStore((s) => s.acidFastResult);
+  const flowState = useMemo(
+    () => ({ testResults, endosporeResult, acidFastResult, gramStain }),
+    [testResults, endosporeResult, acidFastResult, gramStain]
+  );
 
   const detectedId = getFlowchartId(gramStain.reaction, gramStain.shape);
   const section = flowchartSections.find((s) => s.id === detectedId);
@@ -61,39 +72,17 @@ export default function Phase2Flowchart({ onNext }) {
         )}
       </Card>
 
-      {/* Routing decision tree preview */}
+      {/* Full decision tree, with the path highlighted from results so far */}
       {section && (
         <Card>
-          <h3 className="font-medium text-slate-900 dark:text-slate-100 mb-3 text-sm">
-            Key Branching Steps
+          <h3 className="font-medium text-slate-900 dark:text-slate-100 mb-1 text-sm">
+            Identification Flowchart — {section.label}
           </h3>
-          <div className="space-y-2">
-            {section.routingSteps.slice(0, 3).map((step, i) => (
-              <div key={i} className="flex items-start gap-3 text-sm">
-                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-usafa-blue text-white text-xs flex items-center justify-center font-bold mt-0.5">
-                  {step.step}
-                </span>
-                <div>
-                  <span className="font-medium text-slate-800 dark:text-slate-200 capitalize">
-                    {step.test?.replace(/([A-Z])/g, " $1").trim() || step.description || "Observe morphology"}
-                  </span>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {step.branches?.map((b, j) => (
-                      <span
-                        key={j}
-                        className="text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded px-1.5 py-0.5"
-                      >
-                        {b.result} → {b.label.split("→")[1]?.trim() || b.label}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-slate-400 dark:text-slate-500 mt-3">
-            Consult your lab manual for the full diagnostic flowchart.
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+            Each box is a decision point. Your path lights up as you record results; you can reopen
+            this flowchart at any time during biochemical testing.
           </p>
+          <FlowchartTree section={section} state={flowState} disabledTests={disabledTests} />
         </Card>
       )}
 

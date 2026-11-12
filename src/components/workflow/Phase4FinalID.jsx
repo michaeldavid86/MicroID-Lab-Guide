@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useSessionStore } from "../../stores/useSessionStore";
+import { usePoolIds } from "../../utils/usePool";
 import { organisms as allOrganisms } from "../../data/organisms";
 import Card from "../shared/Card";
 import Badge from "../shared/Badge";
@@ -45,7 +46,9 @@ export default function Phase4FinalID() {
   const runSanityCheck = useSessionStore((s) => s.runSanityCheck);
   const confirmIdentification = useSessionStore((s) => s.confirmIdentification);
 
-  const [confidence, setConfidence] = useState("high");
+  const poolIds = usePoolIds();
+  const savedConfidence = useSessionStore((s) => s.identificationConfidence);
+  const [confidence, setConfidence] = useState(savedConfidence || "high");
   const [notes, setNotes] = useState("");
   const [checkedSanity, setCheckedSanity] = useState(false);
   const [showWriteIn, setShowWriteIn] = useState(!!customOrganismName);
@@ -87,8 +90,8 @@ export default function Phase4FinalID() {
         <div className="flex gap-2 justify-center flex-wrap">
           {proposedOrg && <Badge variant={`bsl${proposedOrg.bslLevel}`}>BSL-{proposedOrg.bslLevel}</Badge>}
           {customOrganismName && <Badge variant="info">Write-in ID</Badge>}
-          <Badge variant={confidence === "high" ? "positive" : confidence === "medium" ? "variable" : "critical"}>
-            {confidence} confidence
+          <Badge variant={(savedConfidence || confidence) === "high" ? "positive" : (savedConfidence || confidence) === "medium" ? "variable" : "critical"}>
+            {savedConfidence || confidence} confidence
           </Badge>
         </div>
         <button
@@ -130,7 +133,7 @@ export default function Phase4FinalID() {
                 >
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-sm italic text-slate-900 dark:text-slate-100">{org.name}</span>
-                    {org.isAssignableUnknown && <Badge variant="assignable">⭐ In pool</Badge>}
+                    {poolIds.has(org.id) && <Badge variant="assignable">⭐ In pool</Badge>}
                     <Badge variant={`bsl${org.bslLevel}`}>BSL-{org.bslLevel}</Badge>
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{org.clinicalSignificance.substring(0, 80)}…</p>

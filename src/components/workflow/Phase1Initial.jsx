@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { ChevronRight, Microscope, Info, Camera, Trash2, Loader2 } from "lucide-react";
 import { useSessionStore } from "../../stores/useSessionStore";
+import { useAppStore } from "../../stores/useAppStore";
 import { compressImage } from "../../utils/photoUtils";
 import Card from "../shared/Card";
 import Badge from "../shared/Badge";
@@ -166,6 +167,12 @@ export default function Phase1Initial({ onNext }) {
   const acidFastResult = useSessionStore((s) => s.acidFastResult);
   const setEndosporeResult = useSessionStore((s) => s.setEndosporeResult);
   const setAcidFastResult = useSessionStore((s) => s.setAcidFastResult);
+  const disabledTests = useAppStore((s) => s.disabledTests) || [];
+  // A stain card stays visible if a result was already recorded for it.
+  const showEndospore = !disabledTests.includes("endosporeStain") || endosporeResult !== null;
+  const showAcidFast = !disabledTests.includes("acidFastStain") || acidFastResult !== null;
+  const capsuleResult = useSessionStore((s) => s.capsuleResult);
+  const setCapsuleResult = useSessionStore((s) => s.setCapsuleResult);
   const colonyMorphology = useSessionStore((s) => s.colonyMorphology);
   const setColonyMorphology = useSessionStore((s) => s.setColonyMorphology);
 
@@ -250,7 +257,7 @@ export default function Phase1Initial({ onNext }) {
       {gramStain.reaction && (
         <>
           {/* Endospore stain — relevant for GP rods */}
-          {(gramStain.reaction === "positive" && gramStain.shape === "rod") && (
+          {showEndospore && (gramStain.reaction === "positive" && gramStain.shape === "rod") && (
             <Card>
               <h2 className="font-semibold text-slate-900 dark:text-slate-100 mb-3">Endospore Stain</h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
@@ -278,7 +285,7 @@ export default function Phase1Initial({ onNext }) {
           )}
 
           {/* Acid-fast stain */}
-          {gramStain.reaction === "positive" && gramStain.shape === "rod" && (
+          {showAcidFast && gramStain.reaction === "positive" && gramStain.shape === "rod" && (
             <Card>
               <h2 className="font-semibold text-slate-900 dark:text-slate-100 mb-3">Acid-Fast Stain (Ziehl-Neelsen)</h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
@@ -303,6 +310,34 @@ export default function Phase1Initial({ onNext }) {
                 ))}
               </div>
             </Card>
+          )}
+
+          {/* Capsule stain — optional, any organism */}
+          {(!disabledTests.includes("capsuleStain") || capsuleResult !== null) && (
+          <Card>
+            <h2 className="font-semibold text-slate-900 dark:text-slate-100 mb-3">Capsule Stain</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+              Optional. Clear halo around the cells against a dark background = capsule positive.
+            </p>
+            <div className="flex gap-2">
+              {["positive", "negative", "not performed"].map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setCapsuleResult(v === "not performed" ? null : v)}
+                  className={`flex-1 py-2 rounded-lg border-2 text-sm font-medium transition-all capitalize ${
+                    (capsuleResult === v || (v === "not performed" && capsuleResult === null))
+                      ? v === "positive" ? "bg-green-100 border-green-500 text-green-800 dark:bg-green-900 dark:text-green-200"
+                        : v === "negative" ? "bg-red-100 border-red-500 text-red-800 dark:bg-red-900 dark:text-red-200"
+                        : "bg-slate-200 border-slate-400 text-slate-700 dark:bg-slate-600 dark:text-slate-300"
+                      : "bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300"
+                  }`}
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
+          </Card>
           )}
 
           {/* Colony morphology */}

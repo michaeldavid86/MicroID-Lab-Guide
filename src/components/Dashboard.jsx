@@ -43,7 +43,6 @@ export default function Dashboard() {
 
   const restoreRef = useRef(null);
   const [restoreError, setRestoreError] = useState(null);
-  const [restoreSuccess, setRestoreSuccess] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [, setTick] = useState(0);
 
@@ -63,7 +62,6 @@ export default function Dashboard() {
         const data = JSON.parse(ev.target.result);
         if (!data._microidBackup || !data.sessionId) throw new Error("Not a MicroID backup file.");
         loadSession(data);
-        setRestoreSuccess(true);
         navigate("/workflow");
       } catch (err) {
         setRestoreError(err.message || "Could not read backup file. Make sure it's a MicroID .json backup.");

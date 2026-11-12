@@ -98,14 +98,6 @@ function ReferenceCard({ item, type }) {
                     <p className="text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 rounded-lg p-2">{item.commonPitfalls}</p>
                   </div>
                 )}
-                {item.relatedExercises?.length > 0 && (
-                  <div className="flex items-center gap-1 flex-wrap">
-                    <span className="text-xs text-slate-500 dark:text-slate-400">See:</span>
-                    {item.relatedExercises.map((ex) => (
-                      <Badge key={ex} variant="info">{ex}</Badge>
-                    ))}
-                  </div>
-                )}
               </>
             )}
           </div>

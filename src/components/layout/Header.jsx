@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { Microscope, Moon, Sun, FlaskConical, RotateCcw, AlertTriangle, X } from "lucide-react";
+import { Microscope, Moon, Sun, FlaskConical, RotateCcw, AlertTriangle, X, Settings } from "lucide-react";
 import { useAppStore } from "../../stores/useAppStore";
 import { useSessionStore } from "../../stores/useSessionStore";
 
@@ -161,6 +161,16 @@ export default function Header() {
               <span className="hidden sm:inline">Start Over</span>
             </button>
           )}
+
+          {/* Course setup (which tests the classroom stocks) */}
+          <button
+            onClick={() => navigate("/setup")}
+            className="p-1.5 rounded-full hover:bg-blue-700 transition-colors"
+            aria-label="Course setup"
+            title="Course setup"
+          >
+            <Settings className="w-5 h-5 text-blue-200" />
+          </button>
 
           {/* Dark mode toggle */}
           <button

@@ -36,8 +36,6 @@ export const tests = [
       "The Gram stain differentiates bacteria based on cell wall structure. Gram-positive bacteria have a thick peptidoglycan layer that retains the crystal violet-iodine complex. Gram-negative bacteria have a thin peptidoglycan layer and an outer membrane — the decolorizer dissolves the outer membrane and washes out the CV-I complex, leaving cells colorless until counterstained with safranin.",
     applicableSections: [1, 2, 3],
     prerequisiteTests: [],
-    photoPositive: "/images/tests/gram-stain-positive.jpg",
-    photoNegative: "/images/tests/gram-stain-negative.jpg",
     quickRef: "Crystal violet → Iodine → Decolorizer → Safranin. Purple = Gram+, Pink = Gram−.",
   },
   {
@@ -55,8 +53,6 @@ export const tests = [
       "Endospores are highly resistant dormant structures produced by Bacillus and Clostridium. The Schaeffer-Fulton method uses malachite green forced into spores by steam heat. Vegetative cells are decolorized with water and counterstained with safranin (pink). Spores retain the green dye.",
     applicableSections: [1, 2],
     prerequisiteTests: ["gramStain"],
-    photoPositive: "/images/tests/endospore-positive.jpg",
-    photoNegative: "/images/tests/endospore-negative.jpg",
     quickRef: "Malachite green + steam heat → water wash → safranin. Green spores inside pink cells = positive.",
   },
   {
@@ -74,8 +70,6 @@ export const tests = [
       "Mycobacteria have cell walls rich in mycolic acids (waxy lipids) that resist standard staining. Carbolfuchsin is forced into the cell with heat. Acid-alcohol decolorization cannot remove the dye from mycolic acid-containing cells. Non-acid-fast cells lose the dye and take up the methylene blue counterstain.",
     applicableSections: [1],
     prerequisiteTests: ["gramStain"],
-    photoPositive: "/images/tests/acid-fast-positive.jpg",
-    photoNegative: "/images/tests/acid-fast-negative.jpg",
     quickRef: "Carbolfuchsin + heat → acid-alcohol → methylene blue. Red bacilli = acid-fast positive.",
   },
   {
@@ -93,8 +87,6 @@ export const tests = [
       "Capsules are polysaccharide or polypeptide layers outside the cell wall that repel most stains. India ink or nigrosin creates a dark background. The capsule appears as a clear halo because it excludes the stain particles. Capsules are major virulence factors — they prevent phagocytosis.",
     applicableSections: [1, 2, 3],
     prerequisiteTests: ["gramStain"],
-    photoPositive: "/images/tests/capsule-positive.jpg",
-    photoNegative: "/images/tests/capsule-negative.jpg",
     quickRef: "India ink negative stain. Clear halo around cell = capsule present.",
   },
 
@@ -116,8 +108,6 @@ export const tests = [
       "Catalase (2H₂O₂ → 2H₂O + O₂) decomposes hydrogen peroxide, a toxic byproduct of aerobic metabolism. Organisms that use cytochrome-based electron transport chains produce catalase to protect against oxidative damage. Key differentiator: Staphylococcus (catalase+) vs. Streptococcus (catalase−).",
     applicableSections: [1, 2, 3],
     prerequisiteTests: ["gramStain"],
-    photoPositive: "/images/tests/catalase-positive.jpg",
-    photoNegative: "/images/tests/catalase-negative.jpg",
     quickRef: "Drop 3% H₂O₂ on colony. Bubbles = positive. CAUTION: Don't pick from blood agar (RBCs contain catalase → false positive).",
   },
   {
@@ -135,8 +125,6 @@ export const tests = [
       "Oxidase detects cytochrome c oxidase, the terminal enzyme in the electron transport chain that transfers electrons to molecular O₂. Pseudomonas and Neisseria are oxidase-positive. Most Enterobacteriaceae are oxidase-negative — a critical early differentiator for Gram-negative rods.",
     applicableSections: [1, 2, 3],
     prerequisiteTests: ["gramStain"],
-    photoPositive: "/images/tests/oxidase-positive.jpg",
-    photoNegative: "/images/tests/oxidase-negative.jpg",
     quickRef: "Rub colony on oxidase reagent strip. Purple within 10s = positive. Use wooden stick or loop (not nichrome — false positive).",
   },
   {
@@ -154,8 +142,6 @@ export const tests = [
       "Coagulase converts fibrinogen → fibrin, forming a clot around the bacterium. This creates a fibrin shield that protects S. aureus from phagocytosis and immune recognition. Coagulase is the gold-standard test for identifying S. aureus among staphylococci.",
     applicableSections: [2],
     prerequisiteTests: ["gramStain", "catalase"],
-    photoPositive: "/images/tests/coagulase-positive.jpg",
-    photoNegative: "/images/tests/coagulase-negative.jpg",
     quickRef: "Emulsify colony in rabbit plasma tube. Incubate 4h (check at 1h, 4h, 24h). Any clot = positive = S. aureus.",
   },
   {
@@ -173,8 +159,6 @@ export const tests = [
       "DNase is an extracellular enzyme that hydrolyzes DNA into nucleotides. S. aureus and Serratia marcescens are notable DNase producers. The test uses DNase agar flooded with HCl — HCl precipitates intact DNA (opaque), but hydrolyzed DNA remains clear.",
     applicableSections: [2, 3],
     prerequisiteTests: ["gramStain"],
-    photoPositive: "/images/tests/dnase-positive.jpg",
-    photoNegative: "/images/tests/dnase-negative.jpg",
     quickRef: "Streak DNase agar. Incubate. Flood with 1N HCl. Clear zone = positive.",
   },
   {
@@ -192,8 +176,6 @@ export const tests = [
       "Gelatinase is an extracellular protease (exoenzyme) that hydrolyzes gelatin into amino acids. Organisms producing gelatinase can break down connective tissue collagen, contributing to tissue invasion and spread.",
     applicableSections: [1, 2, 3],
     prerequisiteTests: ["gramStain"],
-    photoPositive: "/images/tests/gelatinase-positive.jpg",
-    photoNegative: "/images/tests/gelatinase-negative.jpg",
     quickRef: "Stab nutrient gelatin deep. Incubate. Refrigerate 30 min. Liquid = positive (gelatin hydrolyzed).",
   },
   {
@@ -211,8 +193,6 @@ export const tests = [
       "Amylase is an exoenzyme that hydrolyzes starch into maltose and glucose. Starch agar flooded with Gram's iodine turns blue-black where starch is intact. Clear zones indicate starch was hydrolyzed by amylase-producing organisms.",
     applicableSections: [1, 3],
     prerequisiteTests: ["gramStain"],
-    photoPositive: "/images/tests/amylase-positive.jpg",
-    photoNegative: "/images/tests/amylase-negative.jpg",
     quickRef: "Streak starch agar. Incubate. Flood with iodine. Clear zone = positive.",
   },
   {
@@ -230,8 +210,6 @@ export const tests = [
       "Lipase hydrolyzes triglycerides (fats) into glycerol and fatty acids. Tributyrin agar is opaque due to emulsified tributyrin fat. Lipase-producing organisms create clear zones where fat has been broken down.",
     applicableSections: [1],
     prerequisiteTests: ["gramStain"],
-    photoPositive: "/images/tests/lipase-positive.jpg",
-    photoNegative: "/images/tests/lipase-negative.jpg",
     quickRef: "Streak tributyrin agar. Incubate. Clear zone = positive.",
   },
   {
@@ -249,8 +227,6 @@ export const tests = [
       "Urease hydrolyzes urea → CO₂ + 2NH₃. The ammonia raises the pH, turning the phenol red indicator from peach/yellow to bright pink. Proteus species are rapid urease producers. Klebsiella and some Staphylococcus are also urease-positive.",
     applicableSections: [1, 2, 3],
     prerequisiteTests: ["gramStain"],
-    photoPositive: "/images/tests/urease-positive.jpg",
-    photoNegative: "/images/tests/urease-negative.jpg",
     quickRef: "Inoculate urea broth. Incubate 24h. Pink = positive (urease produces ammonia → alkaline pH).",
   },
 
@@ -272,8 +248,6 @@ export const tests = [
       "Tryptophanase degrades the amino acid tryptophan → indole + pyruvic acid + NH₃. Kovac's reagent (p-dimethylaminobenzaldehyde) reacts with indole to form a red-colored rosindole dye. E. coli is a classic indole-positive organism.",
     applicableSections: [1, 3],
     prerequisiteTests: ["gramStain"],
-    photoPositive: "/images/tests/indole-positive.jpg",
-    photoNegative: "/images/tests/indole-negative.jpg",
     quickRef: "Inoculate SIM or tryptone broth. Incubate 24-48h. Add Kovac's reagent. Red ring = positive.",
   },
   {
@@ -291,8 +265,6 @@ export const tests = [
       "MR tests for stable mixed-acid fermentation. Mixed-acid fermenters produce large amounts of organic acids (lactic, acetic, formic, succinic) that maintain a low pH even after prolonged incubation. Butanediol fermenters convert acids to neutral products, raising pH. MR and VP are complementary — usually MR+/VP− or MR−/VP+.",
     applicableSections: [3],
     prerequisiteTests: ["gramStain"],
-    photoPositive: "/images/tests/methyl-red-positive.jpg",
-    photoNegative: "/images/tests/methyl-red-negative.jpg",
     quickRef: "Inoculate MR-VP broth. Incubate 48-72h (minimum!). Add methyl red drops. Red = positive, Yellow = negative.",
   },
   {
@@ -310,8 +282,6 @@ export const tests = [
       "VP detects acetoin (acetylmethylcarbinol), an intermediate in the 2,3-butanediol fermentation pathway. Barritt's reagent A (α-naphthol) and B (KOH) oxidize acetoin to diacetyl, which reacts with guanidine residues in peptone to form a red complex. VP-positive organisms: Klebsiella, Enterobacter, Serratia.",
     applicableSections: [1, 3],
     prerequisiteTests: ["gramStain"],
-    photoPositive: "/images/tests/vp-positive.jpg",
-    photoNegative: "/images/tests/vp-negative.jpg",
     quickRef: "From MR-VP broth: add Barritt's A (α-naphthol), then B (KOH). Shake. Wait 15-20 min. Red/pink = positive.",
   },
   {
@@ -329,8 +299,6 @@ export const tests = [
       "Tests whether an organism can use citrate as its sole carbon and energy source. Citrate is metabolized via the TCA cycle. Ammonium dihydrogen phosphate is the sole nitrogen source — when metabolized, it releases NH₃ which raises pH, turning bromothymol blue indicator from green to blue.",
     applicableSections: [3],
     prerequisiteTests: ["gramStain"],
-    photoPositive: "/images/tests/citrate-positive.jpg",
-    photoNegative: "/images/tests/citrate-negative.jpg",
     quickRef: "Streak Simmons citrate slant. Incubate 24-48h. Blue = positive (citrate utilized). Green = negative.",
   },
   {
@@ -369,8 +337,6 @@ export const tests = [
       "Nitrate reductase reduces NO₃⁻ → NO₂⁻ (and sometimes further to N₂ gas). Reagents detect nitrite. If negative: add zinc to reduce any remaining nitrate to nitrite. If zinc causes red → nitrate was NOT reduced (true negative). If zinc causes no color → organism reduced nitrate completely past nitrite (strong positive).",
     applicableSections: [1, 2, 3],
     prerequisiteTests: ["gramStain"],
-    photoPositive: "/images/tests/nitrate-positive.jpg",
-    photoNegative: "/images/tests/nitrate-negative.jpg",
     quickRef: "Incubate in nitrate broth. Add reagents A+B. Red = positive. No red → add zinc: red = negative, no red = strong positive.",
   },
   {
@@ -388,8 +354,6 @@ export const tests = [
       "H₂S is produced by the enzymatic degradation of sulfur-containing amino acids (cysteine) by cysteine desulfurase, or by reduction of thiosulfate. H₂S reacts with ferrous iron (Fe²⁺) in the medium to form black ferrous sulfide (FeS) precipitate. Salmonella and Proteus are classic H₂S producers.",
     applicableSections: [3],
     prerequisiteTests: ["gramStain"],
-    photoPositive: "/images/tests/h2s-positive.jpg",
-    photoNegative: "/images/tests/h2s-negative.jpg",
     quickRef: "Read SIM medium or KIA. Black precipitate = H₂S positive.",
   },
   {
@@ -407,8 +371,6 @@ export const tests = [
       "Motile bacteria use flagella to swim through semisolid (0.4% agar) medium, creating turbidity away from the stab line. Non-motile organisms grow only along the stab line. Motility is key in differentiating enterics: E. coli (motile) vs. Klebsiella (nonmotile), Proteus (swarming motility).",
     applicableSections: [1, 2, 3],
     prerequisiteTests: ["gramStain"],
-    photoPositive: "/images/tests/motility-positive.jpg",
-    photoNegative: "/images/tests/motility-negative.jpg",
     quickRef: "Stab SIM medium. Incubate. Spreading growth = motile. Growth only along stab = nonmotile.",
   },
   {
@@ -426,8 +388,6 @@ export const tests = [
       "Phenylalanine deaminase converts phenylalanine → phenylpyruvic acid + NH₃. Ferric chloride reacts with phenylpyruvic acid to form a green-colored complex. Positive for Proteus, Providencia, and Morganella — the \"PPM\" group.",
     applicableSections: [3],
     prerequisiteTests: ["gramStain"],
-    photoPositive: "/images/tests/phenylalanine-positive.jpg",
-    photoNegative: "/images/tests/phenylalanine-negative.jpg",
     quickRef: "Streak phenylalanine agar slant. Incubate 24h. Add ferric chloride. Green = positive (Proteus/Providencia/Morganella).",
   },
 
@@ -470,8 +430,6 @@ export const tests = [
       firstPrinciple: `Fermentation tests detect an organism's ability to catabolize ${sugar} anaerobically, producing organic acids (detected by phenol red pH indicator turning yellow) and/or gas (CO₂ and H₂ captured in the Durham tube). Different organisms have different enzymatic machinery for catabolizing different sugars.`,
       applicableSections: [1, 2, 3],
       prerequisiteTests: ["gramStain"],
-      photoPositive: `/images/tests/${sugar}-ferm-positive.jpg`,
-      photoNegative: `/images/tests/${sugar}-ferm-negative.jpg`,
       quickRef: `Inoculate ${sugar} broth with Durham tube. Incubate 24-48h. Yellow = acid. Bubble in Durham tube = gas.`,
     })
   ),
@@ -493,8 +451,6 @@ export const tests = [
     firstPrinciple: `Decarboxylases remove the carboxyl group (–COOH) from amino acids, producing alkaline amines. ${amino.charAt(0).toUpperCase() + amino.slice(1)} decarboxylase converts ${amino} → ${amino === "arginine" ? "agmatine" : amino === "lysine" ? "cadaverine" : "putrescine"}. The alkaline amine raises pH, turning the bromocresol purple indicator from yellow back to purple. The amine products (cadaverine, putrescine) are named for their foul odor in decomposing tissue.`,
     applicableSections: [2, 3],
     prerequisiteTests: ["gramStain"],
-    photoPositive: `/images/tests/${amino}-positive.jpg`,
-    photoNegative: `/images/tests/${amino}-negative.jpg`,
     quickRef: `Inoculate ${amino} decarboxylase broth (with mineral oil overlay). Incubate 24-96h. Purple = positive, Yellow = negative.`,
   })),
 
@@ -558,8 +514,6 @@ export const tests = [
       "KIA contains two sugars: glucose (0.1%) and lactose (1.0%). All enterics ferment glucose → acid → yellow butt. Only lactose fermenters produce enough acid to also turn the slant yellow (10× more lactose). Non-lactose-fermenters: slant reverts to alkaline (red) as peptone catabolism on the aerobic surface produces NH₃. H₂S = black precipitate (thiosulfate + ferrous sulfide). Gas = bubbles/cracks. CRITICAL: Read at 18-24h — longer incubation causes acid reversion (false alkaline).",
     applicableSections: [3],
     prerequisiteTests: ["gramStain", "oxidase"],
-    photoPositive: "/images/tests/kia-acid-acid.jpg",
-    photoNegative: "/images/tests/kia-alk-acid.jpg",
     quickRef: "Stab butt, streak slant. Incubate 18-24h ONLY. Read slant/butt color, gas, H₂S.",
   },
   {
@@ -577,8 +531,6 @@ export const tests = [
       "MSA is both selective (7.5% NaCl inhibits most non-staphylococci) and differential (mannitol fermentation). S. aureus ferments mannitol → yellow halo. S. epidermidis grows (salt tolerant) but does NOT ferment mannitol → colonies surrounded by red/pink medium.",
     applicableSections: [2],
     prerequisiteTests: ["gramStain", "catalase"],
-    photoPositive: "/images/tests/msa-positive.jpg",
-    photoNegative: "/images/tests/msa-negative.jpg",
     quickRef: "Streak MSA plate. Incubate 24-48h. Yellow halo = mannitol fermenter (S. aureus). Red = non-fermenter.",
   },
   {
@@ -596,8 +548,6 @@ export const tests = [
       "Bile esculin tests two abilities: (1) growth in 40% bile (selects for enterococci and Group D strep) and (2) hydrolysis of esculin → esculetin + glucose. Esculetin reacts with ferric citrate in the medium to form a dark brown-black complex. Key test for Enterococcus identification.",
     applicableSections: [2],
     prerequisiteTests: ["gramStain", "catalase"],
-    photoPositive: "/images/tests/bile-esculin-positive.jpg",
-    photoNegative: "/images/tests/bile-esculin-negative.jpg",
     quickRef: "Streak bile esculin slant. Incubate 24-48h. Dark brown/black (>50% slant) = positive. Used for enterococci and Group D strep.",
   },
   {
@@ -629,8 +579,6 @@ export const tests = [
       "Hemolysins are exotoxins that lyse red blood cells. Alpha-hemolysis: partial lysis produces methemoglobin (green). Beta-hemolysis: complete lysis creates a clear zone (streptolysin O and S in S. pyogenes). Gamma: no hemolysis. Hemolysis patterns are critical for Streptococcus classification.",
     applicableSections: [1, 2],
     prerequisiteTests: ["gramStain"],
-    photoPositive: "/images/tests/hemolysis-beta.jpg",
-    photoNegative: "/images/tests/hemolysis-gamma.jpg",
     quickRef: "Streak blood agar. Incubate 24h (preferably CO₂/candle jar). Alpha = green, Beta = clear, Gamma = no change.",
   },
 
@@ -652,8 +600,6 @@ export const tests = [
       "Bacitracin inhibits cell wall synthesis by interfering with bactoprenol recycling. Group A Streptococcus (S. pyogenes) is characteristically sensitive to bacitracin. This is a presumptive test — used alongside hemolysis pattern and PYR for Group A Strep identification.",
     applicableSections: [2],
     prerequisiteTests: ["gramStain", "catalase", "hemolysis"],
-    photoPositive: "/images/tests/bacitracin-sensitive.jpg",
-    photoNegative: "/images/tests/bacitracin-resistant.jpg",
     quickRef: "Streak beta-hemolytic strep on blood agar. Place bacitracin (A) disk. Any zone = sensitive = presumptive Group A.",
   },
   {
@@ -671,8 +617,6 @@ export const tests = [
       "Optochin (ethylhydrocupreine) disrupts the cell membrane of S. pneumoniae. A zone ≥14 mm identifies S. pneumoniae (alpha-hemolytic, optochin-sensitive). Other alpha-hemolytic streptococci (viridans group) are optochin-resistant.",
     applicableSections: [2],
     prerequisiteTests: ["gramStain", "catalase", "hemolysis"],
-    photoPositive: "/images/tests/optochin-sensitive.jpg",
-    photoNegative: "/images/tests/optochin-resistant.jpg",
     quickRef: "Streak alpha-hemolytic strep on blood agar. Place optochin (P) disk. Zone ≥14mm = S. pneumoniae.",
   },
   {
@@ -690,8 +634,6 @@ export const tests = [
       "Novobiocin inhibits DNA gyrase. Coagulase-negative staphylococci are differentiated by novobiocin sensitivity: S. epidermidis is sensitive (zone ≥16mm), while S. saprophyticus is resistant. This is clinically relevant since S. saprophyticus is a common UTI pathogen.",
     applicableSections: [2],
     prerequisiteTests: ["gramStain", "catalase", "coagulase"],
-    photoPositive: "/images/tests/novobiocin-sensitive.jpg",
-    photoNegative: "/images/tests/novobiocin-resistant.jpg",
     quickRef: "For coagulase-negative Staph. Place novobiocin disk. Zone ≥16mm = S. epidermidis. Resistant = S. saprophyticus.",
   },
   {
@@ -709,8 +651,6 @@ export const tests = [
       "CAMP factor (Christie, Atkins, Munch-Petersen) is a protein produced by Group B Streptococcus (S. agalactiae) that synergistically enhances the beta-hemolysin (sphingomyelinase C) of S. aureus. The result is an arrowhead-shaped zone of complete hemolysis at the junction of the two streaks.",
     applicableSections: [2],
     prerequisiteTests: ["gramStain", "catalase", "hemolysis"],
-    photoPositive: "/images/tests/camp-positive.jpg",
-    photoNegative: "/images/tests/camp-negative.jpg",
     quickRef: "Streak S. aureus down center of blood agar. Streak unknown perpendicular (don't touch). Arrowhead hemolysis = Group B Strep.",
   },
   {
@@ -728,8 +668,6 @@ export const tests = [
       "PYR detects pyrrolidonyl arylamidase (pyrrolidonyl peptidase), which hydrolyzes L-pyrrolidonyl-β-naphthylamide. The released β-naphthylamine reacts with the PYR reagent (cinnamaldehyde) to form a red Schiff base. Positive for Group A Streptococcus and Enterococcus — together with bacitracin, it helps differentiate beta-hemolytic strep.",
     applicableSections: [2],
     prerequisiteTests: ["gramStain", "catalase"],
-    photoPositive: "/images/tests/pyr-positive.jpg",
-    photoNegative: "/images/tests/pyr-negative.jpg",
     quickRef: "Rub colony on PYR disk/strip. Add PYR reagent. Red = positive (Group A Strep or Enterococcus).",
   },
 
@@ -751,8 +689,6 @@ export const tests = [
       "Tests salt tolerance. Enterococci grow in 6.5% NaCl; most other streptococci cannot. This is a key differentiator between Enterococcus (salt-tolerant) and Streptococcus (salt-sensitive). Combined with bile esculin, it confirms Enterococcus.",
     applicableSections: [2],
     prerequisiteTests: ["gramStain", "catalase"],
-    photoPositive: "/images/tests/nacl-growth-positive.jpg",
-    photoNegative: "/images/tests/nacl-growth-negative.jpg",
     quickRef: "Inoculate 6.5% NaCl broth. Incubate 24-72h. Turbidity = growth = positive (Enterococcus).",
   },
   {
@@ -770,8 +706,6 @@ export const tests = [
       "7.5% NaCl selects for Staphylococcus species while inhibiting most other bacteria. The high osmotic pressure is lethal to organisms without compatible solute uptake mechanisms. Staphylococci and a few halotolerant organisms survive.",
     applicableSections: [2],
     prerequisiteTests: ["gramStain"],
-    photoPositive: "/images/tests/75-nacl-positive.jpg",
-    photoNegative: "/images/tests/75-nacl-negative.jpg",
     quickRef: "Selective feature of MSA (7.5% NaCl). Growth = Staphylococcus species.",
   },
 ];

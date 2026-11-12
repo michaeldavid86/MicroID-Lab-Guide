@@ -6,6 +6,7 @@ import { persist } from "zustand/middleware";
 import { runElimination, rankTests, runSanityCheck } from "../utils/decisionEngine";
 import { getFlowchartId } from "../data/flowcharts";
 import { organisms } from "../data/organisms";
+import { useAppStore } from "./useAppStore";
 import { putPhoto, deletePhoto, clearPhotos, getAllPhotos } from "../utils/photoDB";
 
 const generateId = () => Math.random().toString(36).slice(2, 10).toUpperCase();
@@ -20,9 +21,66 @@ function recomputeDerived(gramStain, testResults, observations, flowchartSection
     observations
   );
   const testRankings = flowchartSectionId
-    ? rankTests(candidateIds, Object.keys(testResults), flowchartSectionId)
+    ? rankTests(candidateIds, Object.keys(testResults), flowchartSectionId, useAppStore.getState().disabledTests || [])
     : [];
   return { candidateIds, eliminatedEntries, testRankings };
+}
+
+// Organism ids that were renamed/merged. Old sessions and backups that still
+// reference a retired id are mapped to its replacement.
+const ORGANISM_ALIASES = { "enterobacter-aerogenes": "klebsiella-aerogenes" };
+const resolveOrganismId = (id) => ORGANISM_ALIASES[id] || id;
+
+const isPlainObject = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+
+// Build a safe state patch from an untrusted backup file: only known session
+// keys are accepted, each must have the same basic type as its default, and
+// nested objects are merged over defaults so missing fields can't crash the UI.
+function sanitizeSnapshot(snapshot) {
+  const clean = {};
+  for (const key of Object.keys(initialState)) {
+    if (key === "photoError" || !(key in snapshot)) continue;
+    const def = initialState[key];
+    const val = snapshot[key];
+    if (key === "testResults") {
+      if (!isPlainObject(val)) continue;
+      clean.testResults = Object.fromEntries(
+        Object.entries(val).filter(([, e]) => isPlainObject(e) && e.result !== undefined && e.result !== null)
+      );
+    } else if (key === "testPhotos") {
+      if (!isPlainObject(val)) continue;
+      clean.testPhotos = Object.fromEntries(
+        Object.entries(val).filter(
+          ([, p]) => isPlainObject(p) && typeof p.dataUrl === "string" && p.dataUrl.startsWith("data:image/")
+        )
+      );
+    } else if (Array.isArray(def)) {
+      if (Array.isArray(val)) clean[key] = val;
+    } else if (isPlainObject(def)) {
+      if (isPlainObject(val)) {
+        const merged = { ...def };
+        for (const k of Object.keys(def)) {
+          if (!(k in val)) continue;
+          const d = def[k];
+          const v = val[k];
+          // nullable fields accept null or text; everything else must match the default's type
+          if (d === null ? v === null || typeof v === "string" : typeof v === typeof d) merged[k] = v;
+        }
+        clean[key] = merged;
+      }
+    } else if (def === null) {
+      // nullable fields: accept null or a primitive/object as stored by the app
+      if (val === null || typeof val === "string" || (key === "sanityCheckResults" && isPlainObject(val))) clean[key] = val;
+    } else if (typeof val === typeof def) {
+      clean[key] = val;
+    }
+  }
+  if (![1, 2, 3, 4].includes(clean.currentPhase)) delete clean.currentPhase;
+  if (clean.proposedOrganismId) {
+    const id = resolveOrganismId(clean.proposedOrganismId);
+    clean.proposedOrganismId = organisms.some((o) => o.id === id) ? id : null;
+  }
+  return clean;
 }
 
 const initialState = {
@@ -374,7 +432,9 @@ export const useSessionStore = create(
       },
 
       loadSession: (snapshot) => {
-        set({ ...snapshot, photoError: null });
+        const clean = sanitizeSnapshot(snapshot);
+        // Start from a blank session so nothing from the previous one leaks through.
+        set({ ...initialState, ...clean, photoError: null });
         // Cached derived arrays in the backup may be stale (e.g. organism DB
         // changed between app versions) — recompute from the restored observations.
         const s = get();
@@ -386,7 +446,7 @@ export const useSessionStore = create(
         ));
         // Mirror restored photos into IndexedDB. Don't gate the write on a
         // successful clear (a failed clear must not resurrect old photos or drop new ones).
-        const photos = snapshot.testPhotos || {};
+        const photos = clean.testPhotos || {};
         clearPhotos()
           .catch(() => {})
           .then(() => Promise.allSettled(Object.entries(photos).map(([k, r]) => putPhoto(k, r))))
@@ -400,12 +460,15 @@ export const useSessionStore = create(
       // Recompute derived engine state from current observations (used on app
       // mount to correct any stale persisted candidate/elimination arrays).
       recompute: () =>
-        set((state) => recomputeDerived(
-          state.gramStain,
-          state.testResults,
-          { endospore: state.endosporeResult, acidFast: state.acidFastResult, capsule: state.capsuleResult },
-          state.flowchartSectionId
-        )),
+        set((state) => ({
+          ...recomputeDerived(
+            state.gramStain,
+            state.testResults,
+            { endospore: state.endosporeResult, acidFast: state.acidFastResult, capsule: state.capsuleResult },
+            state.flowchartSectionId
+          ),
+          proposedOrganismId: state.proposedOrganismId ? resolveOrganismId(state.proposedOrganismId) : null,
+        })),
 
       // Returns a complete snapshot of all session data for backup/restore
       getSnapshot: () => {
