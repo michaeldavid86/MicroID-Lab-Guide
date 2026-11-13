@@ -6,6 +6,7 @@ import { useSessionStore } from "./stores/useSessionStore";
 import Header from "./components/layout/Header";
 import TabBar from "./components/layout/TabBar";
 import UpdatePrompt from "./components/shared/UpdatePrompt";
+import InstallCheck from "./components/shared/InstallCheck";
 import ErrorBoundary from "./components/shared/ErrorBoundary";
 import Dashboard from "./components/Dashboard";
 import WorkflowContainer from "./components/workflow/WorkflowContainer";
@@ -34,7 +35,8 @@ export default function App() {
   // padding) so the scrollable middle can be positioned exactly between them.
   // This avoids every viewport height unit (dvh/lvh/vh/innerHeight), which iOS
   // standalone PWAs report inconsistently. Only position:fixed top:0 / bottom:0
-  // anchoring is used — verified reliable on-device.
+  // anchoring is used. (bottom:0 only reaches the true screen bottom because
+  // index.html uses status-bar-style "default"; see the note there.)
   useEffect(() => {
     const rootEl = document.documentElement;
     const header = document.getElementById("app-header");
@@ -67,6 +69,7 @@ export default function App() {
       <div id="app-header" className="fixed top-0 inset-x-0 z-40">
         <Header />
         <UpdatePrompt />
+        <InstallCheck />
         {photoError && (
           <div className="flex items-start gap-2 px-4 py-2 bg-amber-100 dark:bg-amber-950 border-b border-amber-300 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200">
             <span className="flex-1">{photoError}</span>

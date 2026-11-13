@@ -5,9 +5,17 @@
     <link rel="icon" type="image/png" href="/favicon-48.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!-- Opaque status bar ("black"), NOT "black-translucent". On iOS 26 a home-screen
+         app installed with black-translucent gets a drawing area one status-bar-height
+         shorter than the screen, placed at the top: content runs under the status bar
+         and the bottom ~59pt can never be painted (WebKit bug 301108), so no CSS can
+         reach the real bottom edge. With an opaque bar the same-sized area sits below
+         the status bar and ends at the true bottom. iOS reads this tag only when the
+         icon is added, so older installs must be re-added (InstallCheck.jsx flags them). -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="MicroID" />
-    <meta name="theme-color" content="#003087" />
+    <meta name="theme-color" content="#003087" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>MicroID Lab Guide — Bio 431</title>
     <!-- Apply persisted (or system) theme before first paint to avoid a light-mode flash -->

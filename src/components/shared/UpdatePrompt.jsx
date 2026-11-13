@@ -43,7 +43,20 @@ export default function UpdatePrompt() {
       <span className="flex-1">A new version of MicroID is ready. Your work is saved.</span>
       <button
         type="button"
-        onClick={() => updateSW && updateSW(true)}
+        onClick={async () => {
+          // Normal path: activate the waiting version; the page reloads itself
+          // once it takes over. On iOS that handoff sometimes never happens
+          // (seen in the simulator), so also message the waiting worker
+          // directly and reload anyway after a few seconds.
+          try {
+            const reg = await navigator.serviceWorker?.getRegistration();
+            reg?.waiting?.postMessage({ type: "SKIP_WAITING" });
+          } catch {
+            /* ignore */
+          }
+          if (updateSW) updateSW(true);
+          setTimeout(() => window.location.reload(), 3000);
+        }}
         className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-usafa-blue text-white font-semibold hover:bg-usafa-blue-light"
       >
         <RefreshCw className="w-3.5 h-3.5" />

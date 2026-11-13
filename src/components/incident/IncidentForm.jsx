@@ -101,15 +101,18 @@ export default function IncidentForm({ onComplete }) {
             <textarea
               value={form.scenario}
               onChange={(e) => setForm((p) => ({ ...p, scenario: e.target.value }))}
-              placeholder="e.g., Unknown biofilm recovered from KC-46 fuel bladder during scheduled maintenance inspection. Growth observed on interior surface. Sample collected for identification and risk assessment."
+              placeholder="e.g., Biofilm recovered from a KC-46 fuel bladder during routine maintenance. Sample collected for identification and risk assessment."
               required
               rows={4}
               className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-usafa-blue focus:border-usafa-blue outline-none resize-none"
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          {/* Full width on phones so placeholders aren't cut off; two columns on wider screens */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {field("Sample Source", "sampleSource", "text", "e.g., Wound swab, Water sample")}
             {field("Location/Platform", "location", "text", "e.g., Hangar 6, FOB Alpha")}
+          </div>
+          <div className="grid grid-cols-2 gap-3">
             {field("Date Reported", "dateReported", "date")}
             {field("Sample ID", "sampleId", "text", "e.g., BIO-2026-047")}
           </div>
